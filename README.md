@@ -583,60 +583,7 @@ The repository should contain only placeholders/example values.
 
 ---
 
-# 19. If I Had Two More Days
-
-With two additional days I would prioritize:
-
-### Automated API contract tests
-
-Add automated tests for:
-
-* Login/refresh behavior.
-* Pagination.
-* Detail endpoints.
-* Saved-listing operations.
-* API response schema validation.
-
-### Better data-quality tooling
-
-Build a reusable validation layer that reports:
-
-* Missing fields.
-* Invalid numeric values.
-* Duplicate records.
-* Cross-endpoint inconsistencies.
-* Unexpected enum values.
-* Timestamp anomalies.
-
-### More comprehensive frontend testing
-
-Add component and integration tests covering:
-
-* Authentication redirects.
-* Filter combinations.
-* Pagination after filtering.
-* Save/unsave flows.
-* Empty states.
-* API failures.
-* Refresh/session behavior.
-
-### Performance improvements
-
-For larger datasets, I would consider:
-
-* Server-assisted filtering where reliable.
-* Web Workers for expensive local analytics.
-* Virtualized listing grids.
-* Cached query results.
-* Incremental/background data loading.
-
-### Observability
-
-Add structured logging and error reporting for production API failures, authentication failures, and unexpected API response shapes.
-
----
-
-# 20. LLM Usage Disclosure
+# 19. LLM Usage Disclosure
 
 LLM assistance was used during development for:
 
@@ -650,6 +597,6 @@ All final implementation decisions and API findings were validated against the r
 
 ---
 
-# 21. Submission
+# 20. Submission
 
 The required candidate details and Q1–Q10 answers are provided in the root submission.json.
