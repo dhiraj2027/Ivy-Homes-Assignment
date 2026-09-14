@@ -1,25 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getListingsByProject, getProject } from '../api/client.js'
-import ListingCard from '../components/ListingCard.jsx'
-import Pagination from '../components/Pagination.jsx'
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getListingsByProject, getProject } from "../api/client.js";
+import ListingCard from "../components/ListingCard.jsx";
+import Pagination from "../components/Pagination.jsx";
 
-import {
-  formatArea,
-  formatPrice,
-  titleCase,
-} from '../utils/formatters.js';
+import { formatArea, formatPrice, titleCase } from "../utils/formatters.js";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 const STATUS_CLASSES = {
-  'under construction': 'bg-amber-50 text-amber-700 ring-amber-200',
-  'ready to move': 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  'new launch': 'bg-blue-50 text-blue-700 ring-blue-200',
+  "under construction": "bg-amber-50 text-amber-700 ring-amber-200",
+  "ready to move": "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  "new launch": "bg-blue-50 text-blue-700 ring-blue-200",
 };
 
 function normalizeText(value) {
-  return String(value ?? '').trim();
+  return String(value ?? "").trim();
 }
 
 function normalizeStatus(value) {
@@ -29,15 +25,12 @@ function normalizeStatus(value) {
 function getStatusClass(status) {
   return (
     STATUS_CLASSES[normalizeStatus(status)] ||
-    'bg-slate-50 text-slate-700 ring-slate-200'
+    "bg-slate-50 text-slate-700 ring-slate-200"
   );
 }
 
 function isFiniteNumber(value) {
-  return (
-    typeof value === 'number' &&
-    Number.isFinite(value)
-  );
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 function getValidCoordinate(value) {
@@ -62,10 +55,7 @@ function getExternalHttpUrl(value) {
   try {
     const url = new URL(raw);
 
-    if (
-      url.protocol !== 'http:' &&
-      url.protocol !== 'https:'
-    ) {
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
       return null;
     }
 
@@ -79,14 +69,12 @@ function getProjectPriceRange(project) {
   const min = project?.price_min;
   const max = project?.price_max;
 
-  const hasMin =
-    isFiniteNumber(min) && min > 0;
+  const hasMin = isFiniteNumber(min) && min > 0;
 
-  const hasMax =
-    isFiniteNumber(max) && max > 0;
+  const hasMax = isFiniteNumber(max) && max > 0;
 
   if (!hasMin && !hasMax) {
-    return 'Price unavailable';
+    return "Price unavailable";
   }
 
   if (hasMin && !hasMax) {
@@ -114,17 +102,11 @@ function getProjectPriceRange(project) {
 }
 
 function getLocation(project) {
-  const parts = [
-    project?.locality,
-    project?.city,
-    project?.state,
-  ]
+  const parts = [project?.locality, project?.city, project?.state]
     .map(normalizeText)
     .filter(Boolean);
 
-  return parts.length > 0
-    ? parts.join(', ')
-    : 'Location unavailable';
+  return parts.length > 0 ? parts.join(", ") : "Location unavailable";
 }
 
 function getAmenities(project) {
@@ -138,13 +120,9 @@ function getAmenities(project) {
 }
 
 function getCoordinates(project) {
-  const latitude = getValidCoordinate(
-    project?.latitude
-  );
+  const latitude = getValidCoordinate(project?.latitude);
 
-  const longitude = getValidCoordinate(
-    project?.longitude
-  );
+  const longitude = getValidCoordinate(project?.longitude);
 
   /*
    * Latitude must be within [-90, 90].
@@ -171,25 +149,18 @@ function getMapsUrl(project) {
     return null;
   }
 
-  const {
-    latitude,
-    longitude,
-  } = coordinates;
+  const { latitude, longitude } = coordinates;
 
   return (
     `https://www.google.com/maps/search/?api=1` +
-    `&query=${encodeURIComponent(
-      `${latitude},${longitude}`
-    )}`
+    `&query=${encodeURIComponent(`${latitude},${longitude}`)}`
   );
 }
 
 function getReportedListingCount(project) {
   const value = Number(project?.total_listings);
 
-  return Number.isInteger(value) && value >= 0
-    ? value
-    : null;
+  return Number.isInteger(value) && value >= 0 ? value : null;
 }
 
 export default function ProjectDetail() {
@@ -198,20 +169,15 @@ export default function ProjectDetail() {
 
   const [project, setProject] = useState(null);
   const [listings, setListings] = useState([]);
-  const [reportedListingTotal, setReportedListingTotal] =
-    useState(null);
+  const [reportedListingTotal, setReportedListingTotal] = useState(null);
 
-  const [loadingProject, setLoadingProject] =
-    useState(true);
+  const [loadingProject, setLoadingProject] = useState(true);
 
-  const [loadingListings, setLoadingListings] =
-    useState(true);
+  const [loadingListings, setLoadingListings] = useState(true);
 
-  const [projectError, setProjectError] =
-    useState('');
+  const [projectError, setProjectError] = useState("");
 
-  const [listingsError, setListingsError] =
-    useState('');
+  const [listingsError, setListingsError] = useState("");
 
   const [listPage, setListPage] = useState(1);
 
@@ -233,7 +199,7 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!normalizedId) {
       setProject(null);
-      setProjectError('Invalid project ID.');
+      setProjectError("Invalid project ID.");
       setLoadingProject(false);
       return undefined;
     }
@@ -244,32 +210,24 @@ export default function ProjectDetail() {
 
     const loadProject = async () => {
       setLoadingProject(true);
-      setProjectError('');
+      setProjectError("");
 
       try {
-        const response = await getProject(
-          normalizedId,
-          {
-            signal: controller.signal,
-          }
-        );
+        const response = await getProject(normalizedId, {
+          signal: controller.signal,
+        });
 
         if (!mounted) {
           return;
         }
 
         if (!response) {
-          throw new Error(
-            'Project was not found.'
-          );
+          throw new Error("Project was not found.");
         }
 
         setProject(response);
       } catch (error) {
-        if (
-          error?.name === 'AbortError' ||
-          controller.signal.aborted
-        ) {
+        if (error?.name === "AbortError" || controller.signal.aborted) {
           return;
         }
 
@@ -278,10 +236,7 @@ export default function ProjectDetail() {
         }
 
         setProject(null);
-        setProjectError(
-          error?.message ||
-          'Unable to load project details.'
-        );
+        setProjectError(error?.message || "Unable to load project details.");
       } finally {
         if (mounted && !controller.signal.aborted) {
           setLoadingProject(false);
@@ -306,7 +261,7 @@ export default function ProjectDetail() {
     if (!normalizedId) {
       setListings([]);
       setReportedListingTotal(null);
-      setListingsError('');
+      setListingsError("");
       setLoadingListings(false);
       return undefined;
     }
@@ -317,27 +272,20 @@ export default function ProjectDetail() {
 
     const loadListings = async () => {
       setLoadingListings(true);
-      setListingsError('');
+      setListingsError("");
 
       try {
-        const response =
-          await getListingsByProject(
-            normalizedId,
-            {
-              offset:
-                (listPage - 1) * PAGE_SIZE,
-              limit: PAGE_SIZE,
-              signal: controller.signal,
-            }
-          );
+        const response = await getListingsByProject(normalizedId, {
+          offset: (listPage - 1) * PAGE_SIZE,
+          limit: PAGE_SIZE,
+          signal: controller.signal,
+        });
 
         if (!mounted) {
           return;
         }
 
-        const results = Array.isArray(
-          response?.results
-        )
+        const results = Array.isArray(response?.results)
           ? response.results
           : [];
 
@@ -346,15 +294,10 @@ export default function ProjectDetail() {
         const total = Number(response?.total);
 
         setReportedListingTotal(
-          Number.isFinite(total) && total >= 0
-            ? total
-            : null
+          Number.isFinite(total) && total >= 0 ? total : null
         );
       } catch (error) {
-        if (
-          error?.name === 'AbortError' ||
-          controller.signal.aborted
-        ) {
+        if (error?.name === "AbortError" || controller.signal.aborted) {
           return;
         }
 
@@ -364,10 +307,7 @@ export default function ProjectDetail() {
 
         setListings([]);
         setReportedListingTotal(null);
-        setListingsError(
-          error?.message ||
-          'Unable to load project listings.'
-        );
+        setListingsError(error?.message || "Unable to load project listings.");
       } finally {
         if (mounted && !controller.signal.aborted) {
           setLoadingListings(false);
@@ -383,63 +323,46 @@ export default function ProjectDetail() {
     };
   }, [normalizedId, listPage, retryKey]);
 
-  const amenities = useMemo(
-    () => getAmenities(project),
-    [project]
-  );
+  const amenities = useMemo(() => getAmenities(project), [project]);
 
-  const status = normalizeText(
-    project?.project_status
-  );
+  const status = normalizeText(project?.project_status);
 
   const statusClass = getStatusClass(status);
 
   const location = getLocation(project);
 
-  const projectUrl = getExternalHttpUrl(
-    project?.project_url
-  );
+  const projectUrl = getExternalHttpUrl(project?.project_url);
 
   const mapsUrl = getMapsUrl(project);
 
-  const reportedProjectListings =
-    getReportedListingCount(project);
+  const reportedProjectListings = getReportedListingCount(project);
 
   const hasCountComparison =
-    reportedProjectListings !== null &&
-    reportedListingTotal !== null;
+    reportedProjectListings !== null && reportedListingTotal !== null;
 
   const reportedCountsMatch =
-    hasCountComparison &&
-    reportedProjectListings ===
-      reportedListingTotal;
+    hasCountComparison && reportedProjectListings === reportedListingTotal;
 
   const handleRetry = useCallback(() => {
     setRetryKey((value) => value + 1);
   }, []);
 
-  const handlePageChange = useCallback(
-    (nextPage) => {
-      const page = Number(nextPage);
+  const handlePageChange = useCallback((nextPage) => {
+    const page = Number(nextPage);
 
-      if (
-        !Number.isInteger(page) ||
-        page < 1
-      ) {
-        return;
-      }
+    if (!Number.isInteger(page) || page < 1) {
+      return;
+    }
 
-      setListPage(page);
+    setListPage(page);
 
-      window.requestAnimationFrame(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        });
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
       });
-    },
-    []
-  );
+    });
+  }, []);
 
   /*
    * Do not treat the endpoint's reported total as an
@@ -458,10 +381,8 @@ export default function ProjectDetail() {
 
     return {
       matches: reportedCountsMatch,
-      projectReported:
-        reportedProjectListings,
-      endpointReported:
-        reportedListingTotal,
+      projectReported: reportedProjectListings,
+      endpointReported: reportedListingTotal,
     };
   }, [
     hasCountComparison,
@@ -510,8 +431,7 @@ export default function ProjectDetail() {
           </h1>
 
           <p className="mt-2 text-sm text-red-700">
-            {projectError ||
-              'The requested project could not be found.'}
+            {projectError || "The requested project could not be found."}
           </p>
 
           <button
@@ -543,9 +463,7 @@ export default function ProjectDetail() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                {normalizeText(
-                  project.apartment_name
-                ) ||
+                {normalizeText(project.apartment_name) ||
                   normalizeText(project.name) ||
                   `Project ${normalizedId}`}
               </h1>
@@ -559,9 +477,7 @@ export default function ProjectDetail() {
               )}
             </div>
 
-            <p className="mt-3 text-sm text-slate-600">
-              {location}
-            </p>
+            <p className="mt-3 text-sm text-slate-600">{location}</p>
 
             {project.description && (
               <p className="mt-5 max-w-4xl whitespace-pre-wrap text-sm leading-6 text-slate-700">
@@ -619,13 +535,9 @@ export default function ProjectDetail() {
             </p>
 
             <p className="mt-1 text-lg font-semibold text-slate-950">
-              {Number.isFinite(
-                Number(project.total_units)
-              )
-                ? Number(
-                    project.total_units
-                  ).toLocaleString('en-IN')
-                : '—'}
+              {Number.isFinite(Number(project.total_units))
+                ? Number(project.total_units).toLocaleString("en-IN")
+                : "—"}
             </p>
           </div>
 
@@ -636,10 +548,8 @@ export default function ProjectDetail() {
 
             <p className="mt-1 text-lg font-semibold text-slate-950">
               {reportedProjectListings !== null
-                ? reportedProjectListings.toLocaleString(
-                    'en-IN'
-                  )
-                : '—'}
+                ? reportedProjectListings.toLocaleString("en-IN")
+                : "—"}
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
@@ -653,9 +563,7 @@ export default function ProjectDetail() {
             </p>
 
             <p className="mt-1 text-lg font-semibold text-slate-950">
-              {normalizeText(
-                project.launch_date
-              ) || '—'}
+              {normalizeText(project.launch_date) || "—"}
             </p>
           </div>
         </div>
@@ -665,15 +573,13 @@ export default function ProjectDetail() {
           <div
             className={`mt-6 rounded-xl border p-4 ${
               countComparison.matches
-                ? 'border-emerald-200 bg-emerald-50'
-                : 'border-amber-200 bg-amber-50'
+                ? "border-emerald-200 bg-emerald-50"
+                : "border-amber-200 bg-amber-50"
             }`}
           >
             <p
               className={`text-sm font-semibold ${
-                countComparison.matches
-                  ? 'text-emerald-800'
-                  : 'text-amber-800'
+                countComparison.matches ? "text-emerald-800" : "text-amber-800"
               }`}
             >
               API-reported listing count comparison
@@ -681,28 +587,19 @@ export default function ProjectDetail() {
 
             <p
               className={`mt-1 text-sm ${
-                countComparison.matches
-                  ? 'text-emerald-700'
-                  : 'text-amber-700'
+                countComparison.matches ? "text-emerald-700" : "text-amber-700"
               }`}
             >
-              Project record reports{' '}
-              <strong>
-                {countComparison.projectReported}
-              </strong>{' '}
-              listings, while the project-listings
-              endpoint reports{' '}
-              <strong>
-                {countComparison.endpointReported}
-              </strong>
-              .
+              Project record reports{" "}
+              <strong>{countComparison.projectReported}</strong> listings, while
+              the project-listings endpoint reports{" "}
+              <strong>{countComparison.endpointReported}</strong>.
             </p>
 
             {!countComparison.matches && (
               <p className="mt-2 text-xs text-amber-700">
-                This is an API-reported comparison only.
-                It is not used as the definitive project
-                listing-count validation in Insights.
+                This is an API-reported comparison only. It is not used as the
+                definitive project listing-count validation in Insights.
               </p>
             )}
           </div>
@@ -711,9 +608,7 @@ export default function ProjectDetail() {
         {/* Amenities */}
         {amenities.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-slate-950">
-              Amenities
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-950">Amenities</h2>
 
             <div className="mt-3 flex flex-wrap gap-2">
               {amenities.map((amenity, index) => (
@@ -738,17 +633,13 @@ export default function ProjectDetail() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-600">
-              Listings currently returned by the project
-              endpoint.
+              Listings currently returned by the project endpoint.
             </p>
           </div>
 
           {reportedListingTotal !== null && (
             <p className="text-sm text-slate-500">
-              API reports{' '}
-              {reportedListingTotal.toLocaleString(
-                'en-IN'
-              )}{' '}
+              API reports {reportedListingTotal.toLocaleString("en-IN")}{" "}
               listings
             </p>
           )}
@@ -774,9 +665,7 @@ export default function ProjectDetail() {
               Unable to load project listings
             </h3>
 
-            <p className="mt-1 text-sm text-red-700">
-              {listingsError}
-            </p>
+            <p className="mt-1 text-sm text-red-700">{listingsError}</p>
 
             <button
               type="button"
@@ -793,8 +682,7 @@ export default function ProjectDetail() {
             </h3>
 
             <p className="mt-2 text-sm text-slate-600">
-              There are no listings currently returned
-              for this project.
+              There are no listings currently returned for this project.
             </p>
           </div>
         ) : (
@@ -802,10 +690,7 @@ export default function ProjectDetail() {
             <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {listings.map((listing) => (
                 <ListingCard
-                  key={
-                    listing?.listing_id ??
-                    listing?.id
-                  }
+                  key={listing?.listing_id ?? listing?.id}
                   listing={listing}
                 />
               ))}

@@ -1,9 +1,4 @@
-import {
-  Link,
-  NavLink,
-  useLocation,
-  useNavigate,
-} from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import {
   Home,
@@ -15,51 +10,43 @@ import {
   User,
   Menu,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from "../context/AuthContext.jsx";
 
 const PUBLIC_NAV_LINKS = [
   {
-    to: '/',
-    label: 'Buy',
+    to: "/",
+    label: "Buy",
     icon: Home,
   },
   {
-    to: '/rentals',
-    label: 'Rent',
+    to: "/rentals",
+    label: "Rent",
     icon: List,
   },
   {
-    to: '/projects',
-    label: 'Projects',
+    to: "/projects",
+    label: "Projects",
     icon: Building2,
   },
   {
-    to: '/insights',
-    label: 'Insights',
+    to: "/insights",
+    label: "Insights",
     icon: BarChart3,
   },
 ];
 
 const SAVED_LINK = {
-  to: '/saved',
-  label: 'Saved',
+  to: "/saved",
+  label: "Saved",
   icon: Heart,
 };
 
 export default function Navbar() {
-  const {
-    user,
-    isAuthenticated,
-    logout,
-  } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,22 +77,17 @@ export default function Navbar() {
       await logout();
     } finally {
       closeMenu();
-      navigate('/login', {
+      navigate("/login", {
         replace: true,
       });
       setLoggingOut(false);
     }
-  }, [
-    loggingOut,
-    logout,
-    navigate,
-    closeMenu,
-  ]);
+  }, [loggingOut, logout, navigate, closeMenu]);
 
   /*
    * The login page intentionally has no global navbar.
    */
-  if (location.pathname === '/login') {
+  if (location.pathname === "/login") {
     return null;
   }
 
@@ -120,7 +102,6 @@ export default function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 items-center justify-between">
-
           {/* Brand */}
           <Link
             to="/"
@@ -132,42 +113,31 @@ export default function Navbar() {
               ivy
             </span>
 
-            <span className="text-sm font-normal text-white/70">
-              homes
-            </span>
+            <span className="text-sm font-normal text-white/70">homes</span>
           </Link>
 
           {/* Desktop navigation */}
           <div className="hidden items-center gap-1 md:flex">
-            {navLinks.map(
-              ({
-                to,
-                label,
-                icon: Icon,
-              }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === '/'}
-                  className={({ isActive }) =>
-                    [
-                      'flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors',
-                      'focus:outline-none focus:ring-2 focus:ring-emerald-400',
-                      isActive
-                        ? 'bg-white/10 text-white'
-                        : 'text-white/60 hover:bg-white/5 hover:text-white',
-                    ].join(' ')
-                  }
-                >
-                  <Icon
-                    size={15}
-                    aria-hidden="true"
-                  />
+            {navLinks.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === "/"}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-emerald-400",
+                    isActive
+                      ? "bg-white/10 text-white"
+                      : "text-white/60 hover:bg-white/5 hover:text-white",
+                  ].join(" ")
+                }
+              >
+                <Icon size={15} aria-hidden="true" />
 
-                  {label}
-                </NavLink>
-              )
-            )}
+                {label}
+              </NavLink>
+            ))}
           </div>
 
           {/* Desktop authentication */}
@@ -175,15 +145,9 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <span className="flex max-w-[220px] items-center gap-1 truncate text-xs text-white/50">
-                  <User
-                    size={13}
-                    aria-hidden="true"
-                    className="shrink-0"
-                  />
+                  <User size={13} aria-hidden="true" className="shrink-0" />
 
-                  <span className="truncate">
-                    {user?.email || 'Signed in'}
-                  </span>
+                  <span className="truncate">{user?.email || "Signed in"}</span>
                 </span>
 
                 <button
@@ -192,12 +156,9 @@ export default function Navbar() {
                   disabled={loggingOut}
                   className="flex items-center gap-1 rounded text-sm text-white/60 transition-colors hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <LogOut
-                    size={14}
-                    aria-hidden="true"
-                  />
+                  <LogOut size={14} aria-hidden="true" />
 
-                  {loggingOut ? 'Signing out…' : 'Sign out'}
+                  {loggingOut ? "Signing out…" : "Sign out"}
                 </button>
               </>
             ) : (
@@ -217,22 +178,12 @@ export default function Navbar() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="mobile-navigation"
-            aria-label={
-              open
-                ? 'Close navigation menu'
-                : 'Open navigation menu'
-            }
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
           >
             {open ? (
-              <X
-                size={20}
-                aria-hidden="true"
-              />
+              <X size={20} aria-hidden="true" />
             ) : (
-              <Menu
-                size={20}
-                aria-hidden="true"
-              />
+              <Menu size={20} aria-hidden="true" />
             )}
           </button>
         </div>
@@ -244,36 +195,27 @@ export default function Navbar() {
           id="mobile-navigation"
           className="space-y-1 border-t border-white/10 bg-navy-950 px-4 py-3 md:hidden"
         >
-          {navLinks.map(
-            ({
-              to,
-              label,
-              icon: Icon,
-            }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/'}
-                onClick={closeMenu}
-                className={({ isActive }) =>
-                  [
-                    'flex items-center gap-2 rounded px-3 py-2 text-sm font-medium',
-                    'focus:outline-none focus:ring-2 focus:ring-emerald-400',
-                    isActive
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/60 hover:text-white',
-                  ].join(' ')
-                }
-              >
-                <Icon
-                  size={16}
-                  aria-hidden="true"
-                />
+          {navLinks.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                [
+                  "flex items-center gap-2 rounded px-3 py-2 text-sm font-medium",
+                  "focus:outline-none focus:ring-2 focus:ring-emerald-400",
+                  isActive
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white",
+                ].join(" ")
+              }
+            >
+              <Icon size={16} aria-hidden="true" />
 
-                {label}
-              </NavLink>
-            )
-          )}
+              {label}
+            </NavLink>
+          ))}
 
           {isAuthenticated ? (
             <button
@@ -282,12 +224,9 @@ export default function Navbar() {
               disabled={loggingOut}
               className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-red-400 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <LogOut
-                size={16}
-                aria-hidden="true"
-              />
+              <LogOut size={16} aria-hidden="true" />
 
-              {loggingOut ? 'Signing out…' : 'Sign out'}
+              {loggingOut ? "Signing out…" : "Sign out"}
             </button>
           ) : (
             <Link

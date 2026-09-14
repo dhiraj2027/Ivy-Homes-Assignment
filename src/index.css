@@ -8,9 +8,9 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
     background-color: #f2f4f7;
-    color: #0A1628;
+    color: #0a1628;
     -webkit-font-smoothing: antialiased;
   }
 }

@@ -1,73 +1,53 @@
-// src/pages/Projects.jsx
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useSearchParams } from "react-router-dom";
 
-import {
-  useSearchParams,
-} from 'react-router-dom';
+import { fetchAll, getProjects } from "../api/client.js";
 
-import {
-  fetchAll,
-  getProjects,
-} from '../api/client.js';
-
-import ProjectCard from '../components/ProjectCard.jsx';
-import Pagination from '../components/Pagination.jsx';
+import ProjectCard from "../components/ProjectCard.jsx";
+import Pagination from "../components/Pagination.jsx";
 
 const PAGE_SIZE = 20;
 
-const DEFAULT_LOCALITY = 'Golf Course Road';
-const DEFAULT_SORT_BY = 'price_max';
-const DEFAULT_ORDER = 'desc';
+const DEFAULT_LOCALITY = "Golf Course Road";
+const DEFAULT_SORT_BY = "price_max";
+const DEFAULT_ORDER = "desc";
 
-const STATUS_OPTIONS = [
-  'under construction',
-  'ready to move',
-  'new launch',
-];
+const STATUS_OPTIONS = ["under construction", "ready to move", "new launch"];
 
 const SORT_OPTIONS = [
   {
-    value: 'price_max:desc',
-    label: 'Price: High to Low',
+    value: "price_max:desc",
+    label: "Price: High to Low",
   },
   {
-    value: 'price_min:asc',
-    label: 'Price: Low to High',
+    value: "price_min:asc",
+    label: "Price: Low to High",
   },
   {
-    value: 'launch_date:desc',
-    label: 'Newest launches',
+    value: "launch_date:desc",
+    label: "Newest launches",
   },
   {
-    value: 'total_units:desc',
-    label: 'Largest',
+    value: "total_units:desc",
+    label: "Largest",
   },
 ];
 
 function toPositiveInt(value, fallback = 1) {
   const parsed = Number.parseInt(value, 10);
 
-  return Number.isInteger(parsed) && parsed > 0
-    ? parsed
-    : fallback;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function toFiniteNumber(value) {
   const parsed = Number(value);
 
-  return Number.isFinite(parsed)
-    ? parsed
-    : null;
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizeText(value) {
-  return String(value ?? '').trim();
+  return String(value ?? "").trim();
 }
 
 function normalizeComparableText(value) {
@@ -75,17 +55,10 @@ function normalizeComparableText(value) {
 }
 
 function isValidSort(sortBy, order) {
-  return SORT_OPTIONS.some(
-    (option) =>
-      option.value === `${sortBy}:${order}`
-  );
+  return SORT_OPTIONS.some((option) => option.value === `${sortBy}:${order}`);
 }
 
-function compareNumbers(
-  a,
-  b,
-  order = 'asc'
-) {
+function compareNumbers(a, b, order = "asc") {
   const first = toFiniteNumber(a);
   const second = toFiniteNumber(b);
 
@@ -103,16 +76,10 @@ function compareNumbers(
 
   const result = first - second;
 
-  return order === 'desc'
-    ? -result
-    : result;
+  return order === "desc" ? -result : result;
 }
 
-function compareDates(
-  a,
-  b,
-  order = 'asc'
-) {
+function compareDates(a, b, order = "asc") {
   const first = Date.parse(a);
   const second = Date.parse(b);
 
@@ -133,50 +100,28 @@ function compareDates(
 
   const result = first - second;
 
-  return order === 'desc'
-    ? -result
-    : result;
+  return order === "desc" ? -result : result;
 }
 
-function sortProjects(
-  projects,
-  sortBy,
-  order
-) {
+function sortProjects(projects, sortBy, order) {
   return [...projects].sort((a, b) => {
     let result = 0;
 
     switch (sortBy) {
-      case 'price_min':
-        result = compareNumbers(
-          a.price_min,
-          b.price_min,
-          order
-        );
+      case "price_min":
+        result = compareNumbers(a.price_min, b.price_min, order);
         break;
 
-      case 'price_max':
-        result = compareNumbers(
-          a.price_max,
-          b.price_max,
-          order
-        );
+      case "price_max":
+        result = compareNumbers(a.price_max, b.price_max, order);
         break;
 
-      case 'launch_date':
-        result = compareDates(
-          a.launch_date,
-          b.launch_date,
-          order
-        );
+      case "launch_date":
+        result = compareDates(a.launch_date, b.launch_date, order);
         break;
 
-      case 'total_units':
-        result = compareNumbers(
-          a.total_units,
-          b.total_units,
-          order
-        );
+      case "total_units":
+        result = compareNumbers(a.total_units, b.total_units, order);
         break;
 
       default:
@@ -187,11 +132,7 @@ function sortProjects(
       return result;
     }
 
-    return String(
-      a.project_id ?? ''
-    ).localeCompare(
-      String(b.project_id ?? '')
-    );
+    return String(a.project_id ?? "").localeCompare(String(b.project_id ?? ""));
   });
 }
 
@@ -218,88 +159,51 @@ function Skeleton() {
 }
 
 export default function Projects() {
-  const [
-    searchParams,
-    setSearchParams,
-  ] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [
-    projects,
-    setProjects,
-  ] = useState([]);
+  const [projects, setProjects] = useState([]);
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [
-    error,
-    setError,
-  ] = useState('');
+  const [error, setError] = useState("");
 
   const filters = useMemo(() => {
     const requestedSortBy =
-      normalizeText(
-        searchParams.get('sort_by')
-      ) || DEFAULT_SORT_BY;
+      normalizeText(searchParams.get("sort_by")) || DEFAULT_SORT_BY;
 
     const requestedOrder =
-      normalizeText(
-        searchParams.get('order')
-      ) || DEFAULT_ORDER;
+      normalizeText(searchParams.get("order")) || DEFAULT_ORDER;
 
-    const validSort = isValidSort(
-      requestedSortBy,
-      requestedOrder
-    );
+    const validSort = isValidSort(requestedSortBy, requestedOrder);
 
-    const localityParam =
-      searchParams.get('locality');
+    const localityParam = searchParams.get("locality");
 
     return {
-      page: toPositiveInt(
-        searchParams.get('page'),
-        1
-      ),
+      page: toPositiveInt(searchParams.get("page"), 1),
 
       locality:
         localityParam === null
           ? DEFAULT_LOCALITY
           : normalizeText(localityParam),
 
-      project_status:
-        normalizeText(
-          searchParams.get(
-            'project_status'
-          )
-        ),
+      project_status: normalizeText(searchParams.get("project_status")),
 
-      sort_by: validSort
-        ? requestedSortBy
-        : DEFAULT_SORT_BY,
+      sort_by: validSort ? requestedSortBy : DEFAULT_SORT_BY,
 
-      order: validSort
-        ? requestedOrder
-        : DEFAULT_ORDER,
+      order: validSort ? requestedOrder : DEFAULT_ORDER,
     };
   }, [searchParams]);
 
-  const [
-    localityInput,
-    setLocalityInput,
-  ] = useState(filters.locality);
+  const [localityInput, setLocalityInput] = useState(filters.locality);
 
   useEffect(() => {
     setLocalityInput(filters.locality);
   }, [filters.locality]);
 
-  const selectedSort =
-    `${filters.sort_by}:${filters.order}`;
+  const selectedSort = `${filters.sort_by}:${filters.order}`;
 
   const hasFilters =
-    filters.locality !== DEFAULT_LOCALITY ||
-    Boolean(filters.project_status);
+    filters.locality !== DEFAULT_LOCALITY || Boolean(filters.project_status);
 
   const update = useCallback(
     (updates) => {
@@ -310,55 +214,31 @@ export default function Projects() {
 
       const clean = {};
 
-      const page = toPositiveInt(
-        merged.page,
-        1
-      );
+      const page = toPositiveInt(merged.page, 1);
 
       if (page > 1) {
         clean.page = String(page);
       }
 
-      const locality =
-        normalizeText(
-          merged.locality
-        );
+      const locality = normalizeText(merged.locality);
 
-      if (
-        locality &&
-        locality !== DEFAULT_LOCALITY
-      ) {
+      if (locality && locality !== DEFAULT_LOCALITY) {
         clean.locality = locality;
       }
 
-      const status =
-        normalizeText(
-          merged.project_status
-        );
+      const status = normalizeText(merged.project_status);
 
       if (status) {
         clean.project_status = status;
       }
 
-      const sortBy =
-        normalizeText(
-          merged.sort_by
-        ) || DEFAULT_SORT_BY;
+      const sortBy = normalizeText(merged.sort_by) || DEFAULT_SORT_BY;
 
-      const order =
-        normalizeText(
-          merged.order
-        ) || DEFAULT_ORDER;
+      const order = normalizeText(merged.order) || DEFAULT_ORDER;
 
       if (
-        isValidSort(
-          sortBy,
-          order
-        ) &&
-        !(
-          sortBy === DEFAULT_SORT_BY &&
-          order === DEFAULT_ORDER
-        )
+        isValidSort(sortBy, order) &&
+        !(sortBy === DEFAULT_SORT_BY && order === DEFAULT_ORDER)
       ) {
         clean.sort_by = sortBy;
         clean.order = order;
@@ -366,10 +246,7 @@ export default function Projects() {
 
       setSearchParams(clean);
     },
-    [
-      filters,
-      setSearchParams,
-    ]
+    [filters, setSearchParams]
   );
 
   const clearFilters = useCallback(() => {
@@ -384,73 +261,49 @@ export default function Projects() {
     }
 
     setSearchParams(clean);
-  }, [
-    filters.sort_by,
-    filters.order,
-    setSearchParams,
-  ]);
+  }, [filters.sort_by, filters.order, setSearchParams]);
 
   useEffect(() => {
-    const controller =
-      new AbortController();
+    const controller = new AbortController();
 
     async function loadProjects() {
       setLoading(true);
-      setError('');
+      setError("");
 
       try {
-        const response =
-          await fetchAll(
-            ({ offset, limit, signal }) =>
-              getProjects(
-                {
-                  offset,
-                  limit,
-                },
-                {
-                  signal,
-                }
-              ),
-            {
-              pageSize: 50,
-              signal:
-                controller.signal,
-              label: 'projects',
-            }
-          );
+        const response = await fetchAll(
+          ({ offset, limit, signal }) =>
+            getProjects(
+              {
+                offset,
+                limit,
+              },
+              {
+                signal,
+              }
+            ),
+          {
+            pageSize: 50,
+            signal: controller.signal,
+            label: "projects",
+          }
+        );
 
-        if (
-          !response ||
-          !Array.isArray(
-            response.results
-          )
-        ) {
-          throw new Error(
-            'Invalid projects response from the API.'
-          );
+        if (!response || !Array.isArray(response.results)) {
+          throw new Error("Invalid projects response from the API.");
         }
 
-        setProjects(
-          response.results
-        );
+        setProjects(response.results);
       } catch (err) {
-        if (
-          err?.name ===
-          'AbortError'
-        ) {
+        if (err?.name === "AbortError") {
           return;
         }
 
         setProjects([]);
 
-        setError(
-          err?.message ||
-            'Could not load projects.'
-        );
+        setError(err?.message || "Could not load projects.");
       } finally {
-        if (
-          !controller.signal.aborted
-        ) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       }
@@ -463,117 +316,52 @@ export default function Projects() {
     };
   }, []);
 
-  const filteredProjects =
-    useMemo(() => {
-      const locality =
-        normalizeComparableText(
-          filters.locality
-        );
+  const filteredProjects = useMemo(() => {
+    const locality = normalizeComparableText(filters.locality);
 
-      const status =
-        normalizeComparableText(
-          filters.project_status
-        );
+    const status = normalizeComparableText(filters.project_status);
 
-      return projects.filter(
-        (project) => {
-          const projectLocality =
-            normalizeComparableText(
-              project.locality
-            );
+    return projects.filter((project) => {
+      const projectLocality = normalizeComparableText(project.locality);
 
-          const projectStatus =
-            normalizeComparableText(
-              project.project_status
-            );
+      const projectStatus = normalizeComparableText(project.project_status);
 
-          const matchesLocality =
-            !locality ||
-            projectLocality ===
-              locality;
+      const matchesLocality = !locality || projectLocality === locality;
 
-          const matchesStatus =
-            !status ||
-            projectStatus ===
-              status;
+      const matchesStatus = !status || projectStatus === status;
 
-          return (
-            matchesLocality &&
-            matchesStatus
-          );
-        }
-      );
-    }, [
-      projects,
-      filters.locality,
-      filters.project_status,
-    ]);
+      return matchesLocality && matchesStatus;
+    });
+  }, [projects, filters.locality, filters.project_status]);
 
-  const sortedProjects =
-    useMemo(() => {
-      return sortProjects(
-        filteredProjects,
-        filters.sort_by,
-        filters.order
-      );
-    }, [
-      filteredProjects,
-      filters.sort_by,
-      filters.order,
-    ]);
+  const sortedProjects = useMemo(() => {
+    return sortProjects(filteredProjects, filters.sort_by, filters.order);
+  }, [filteredProjects, filters.sort_by, filters.order]);
 
-  const total =
-    sortedProjects.length;
+  const total = sortedProjects.length;
 
-  const totalPages =
-    Math.max(
-      1,
-      Math.ceil(
-        total / PAGE_SIZE
-      )
-    );
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const currentPage =
-    Math.min(
-      filters.page,
-      totalPages
-    );
+  const currentPage = Math.min(filters.page, totalPages);
 
-  const paginatedProjects =
-    useMemo(() => {
-      const start =
-        (currentPage - 1) *
-        PAGE_SIZE;
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
 
-      return sortedProjects.slice(
-        start,
-        start + PAGE_SIZE
-      );
-    }, [
-      sortedProjects,
-      currentPage,
-    ]);
+    return sortedProjects.slice(start, start + PAGE_SIZE);
+  }, [sortedProjects, currentPage]);
 
   useEffect(() => {
-    if (
-      !loading &&
-      filters.page !== currentPage
-    ) {
+    if (!loading && filters.page !== currentPage) {
       update({
         page: currentPage,
       });
     }
-  }, [
-    loading,
-    filters.page,
-    currentPage,
-    update,
-  ]);
+  }, [loading, filters.page, currentPage, update]);
 
   useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: 'auto',
+      behavior: "auto",
     });
   }, [currentPage]);
 
@@ -581,28 +369,19 @@ export default function Projects() {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">
-            Projects
-          </h1>
+          <h1 className="text-2xl font-bold text-navy-900">Projects</h1>
 
           {!loading && (
             <p className="mt-0.5 text-sm text-gray-500">
-              {total.toLocaleString(
-                'en-IN'
-              )}{' '}
-              {total === 1
-                ? 'project'
-                : 'projects'}
+              {total.toLocaleString("en-IN")}{" "}
+              {total === 1 ? "project" : "projects"}
             </p>
           )}
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3">
-        <label
-          className="sr-only"
-          htmlFor="project-locality"
-        >
+        <label className="sr-only" htmlFor="project-locality">
           Locality
         </label>
 
@@ -613,11 +392,7 @@ export default function Projects() {
           placeholder="Locality…"
           value={localityInput}
           onChange={(event) => {
-            const value =
-              event.target.value.replace(
-                /^\s+/,
-                ''
-              );
+            const value = event.target.value.replace(/^\s+/, "");
 
             setLocalityInput(value);
 
@@ -634,50 +409,35 @@ export default function Projects() {
           role="group"
           aria-label="Project status"
         >
-          {STATUS_OPTIONS.map(
-            (status) => {
-              const selected =
-                filters.project_status ===
-                status;
+          {STATUS_OPTIONS.map((status) => {
+            const selected = filters.project_status === status;
 
-              return (
-                <button
-                  key={status}
-                  type="button"
-                  aria-pressed={
-                    selected
-                  }
-                  onClick={() =>
-                    update({
-                      project_status:
-                        selected
-                          ? ''
-                          : status,
-                      page: 1,
-                    })
-                  }
-                  className={[
-                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-emerald-400',
-                    selected
-                      ? 'border-navy-900 bg-navy-900 text-white'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-400',
-                  ].join(' ')}
-                >
-                  {status
-                    .charAt(0)
-                    .toUpperCase() +
-                    status.slice(1)}
-                </button>
-              );
-            }
-          )}
+            return (
+              <button
+                key={status}
+                type="button"
+                aria-pressed={selected}
+                onClick={() =>
+                  update({
+                    project_status: selected ? "" : status,
+                    page: 1,
+                  })
+                }
+                className={[
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  "focus:outline-none focus:ring-2 focus:ring-emerald-400",
+                  selected
+                    ? "border-navy-900 bg-navy-900 text-white"
+                    : "border-gray-200 text-gray-600 hover:border-gray-400",
+                ].join(" ")}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            );
+          })}
         </div>
 
-        <label
-          className="sr-only"
-          htmlFor="project-sort"
-        >
+        <label className="sr-only" htmlFor="project-sort">
           Sort projects
         </label>
 
@@ -686,22 +446,13 @@ export default function Projects() {
           aria-label="Sort projects"
           value={selectedSort}
           onChange={(event) => {
-            const value =
-              event.target.value;
+            const value = event.target.value;
 
-            const separator =
-              value.lastIndexOf(':');
+            const separator = value.lastIndexOf(":");
 
-            const sortBy =
-              value.slice(
-                0,
-                separator
-              );
+            const sortBy = value.slice(0, separator);
 
-            const order =
-              value.slice(
-                separator + 1
-              );
+            const order = value.slice(separator + 1);
 
             update({
               sort_by: sortBy,
@@ -711,16 +462,11 @@ export default function Projects() {
           }}
           className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500"
         >
-          {SORT_OPTIONS.map(
-            (option) => (
-              <option
-                key={option.value}
-                value={option.value}
-              >
-                {option.label}
-              </option>
-            )
-          )}
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
 
         {hasFilters && (
@@ -743,9 +489,7 @@ export default function Projects() {
 
           <button
             type="button"
-            onClick={() =>
-              window.location.reload()
-            }
+            onClick={() => window.location.reload()}
             className="shrink-0 font-medium underline focus:outline-none focus:ring-2 focus:ring-red-400"
           >
             Retry
@@ -757,63 +501,46 @@ export default function Projects() {
         {loading
           ? Array.from({
               length: 9,
-            }).map(
-              (_, index) => (
-                <Skeleton
-                  key={index}
-                />
-              )
-            )
-          : paginatedProjects.map(
-              (project) => (
-                <ProjectCard
-                  key={String(
-                    project.project_id
-                  )}
-                  project={project}
-                />
-              )
-            )}
+            }).map((_, index) => <Skeleton key={index} />)
+          : paginatedProjects.map((project) => (
+              <ProjectCard key={String(project.project_id)} project={project} />
+            ))}
       </div>
 
-      {!loading &&
-        total === 0 && (
-          <div className="py-20 text-center">
-            <p className="text-lg font-medium text-gray-500">
-              No projects found
-            </p>
+      {!loading && total === 0 && (
+        <div className="py-20 text-center">
+          <p className="text-lg font-medium text-gray-500">No projects found</p>
 
-            <p className="mt-1 text-sm text-gray-400">
-              {hasFilters
-                ? 'Try changing or clearing your filters.'
-                : 'There are currently no projects to display.'}
-            </p>
+          <p className="mt-1 text-sm text-gray-400">
+            {hasFilters
+              ? "Try changing or clearing your filters."
+              : "There are currently no projects to display."}
+          </p>
 
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="mt-5 rounded-lg bg-navy-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        )}
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-5 rounded-lg bg-navy-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      )}
 
-      {!loading &&
-        total > 0 && (
-          <Pagination
-            page={currentPage}
-            total={total}
-            pageSize={PAGE_SIZE}
-            onChange={(nextPage) =>
-              update({
-                page: nextPage,
-              })
-            }
-          />
-        )}
+      {!loading && total > 0 && (
+        <Pagination
+          page={currentPage}
+          total={total}
+          pageSize={PAGE_SIZE}
+          onChange={(nextPage) =>
+            update({
+              page: nextPage,
+            })
+          }
+        />
+      )}
     </div>
   );
 }

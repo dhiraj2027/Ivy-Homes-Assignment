@@ -1,12 +1,5 @@
-// src/pages/ListingDetail.jsx
-
-import { useEffect, useState } from 'react';
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
   AlertTriangle,
@@ -16,16 +9,16 @@ import {
   MapPin,
   Phone,
   Shield,
-} from 'lucide-react';
+} from "lucide-react";
 
 import {
   addFavourite,
   getFavourites,
   getListing,
   removeFavourite,
-} from '../api/client.js';
+} from "../api/client.js";
 
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from "../context/AuthContext.jsx";
 
 import {
   formatArea,
@@ -34,37 +27,31 @@ import {
   formatPricePerSqft,
   formatRelative,
   titleCase,
-} from '../utils/formatters.js';
+} from "../utils/formatters.js";
 
 function hasValue(value) {
-  return (
-    value !== undefined &&
-    value !== null &&
-    value !== ''
-  );
+  return value !== undefined && value !== null && value !== "";
 }
 
 function toFiniteNumber(value) {
   const number = Number(value);
 
-  return Number.isFinite(number)
-    ? number
-    : null;
+  return Number.isFinite(number) ? number : null;
 }
 
 function normalizeBoolean(value, fallback = null) {
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return value;
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const normalized = value.trim().toLowerCase();
 
-    if (normalized === 'true') {
+    if (normalized === "true") {
       return true;
     }
 
-    if (normalized === 'false') {
+    if (normalized === "false") {
       return false;
     }
   }
@@ -75,12 +62,10 @@ function normalizeBoolean(value, fallback = null) {
 function Stat({ label, value }) {
   return (
     <div className="flex justify-between gap-4 border-b border-gray-100 py-2.5 last:border-0">
-      <span className="text-sm text-gray-500">
-        {label}
-      </span>
+      <span className="text-sm text-gray-500">{label}</span>
 
       <span className="text-right text-sm font-medium text-gray-900">
-        {hasValue(value) ? value : '—'}
+        {hasValue(value) ? value : "—"}
       </span>
     </div>
   );
@@ -110,24 +95,24 @@ export default function ListingDetail() {
   const [listing, setListing] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadListing() {
       setLoading(true);
-      setError('');
-      setSaveError('');
+      setError("");
+      setSaveError("");
       setSaved(false);
 
       try {
         if (!id) {
-          throw new Error('Listing ID is missing.');
+          throw new Error("Listing ID is missing.");
         }
 
         const data = await getListing(id);
@@ -136,14 +121,8 @@ export default function ListingDetail() {
           return;
         }
 
-        if (
-          !data ||
-          typeof data !== 'object' ||
-          Array.isArray(data)
-        ) {
-          throw new Error(
-            'Invalid listing response from the API.'
-          );
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          throw new Error("Invalid listing response from the API.");
         }
 
         setListing(data);
@@ -156,21 +135,15 @@ export default function ListingDetail() {
               return;
             }
 
-            const results = Array.isArray(
-              favourites?.results
-            )
+            const results = Array.isArray(favourites?.results)
               ? favourites.results
               : Array.isArray(favourites)
-                ? favourites
-                : [];
+              ? favourites
+              : [];
 
             const isSaved = results.some(
               (item) =>
-                String(
-                  item?.listing_id ??
-                  item?.id ??
-                  ''
-                ) === String(id)
+                String(item?.listing_id ?? item?.id ?? "") === String(id)
             );
 
             setSaved(isSaved);
@@ -183,10 +156,7 @@ export default function ListingDetail() {
       } catch (err) {
         if (!cancelled) {
           setListing(null);
-          setError(
-            err?.message ||
-              'Could not load this listing.'
-          );
+          setError(err?.message || "Could not load this listing.");
         }
       } finally {
         if (!cancelled) {
@@ -208,12 +178,10 @@ export default function ListingDetail() {
     }
 
     if (!isAuthenticated) {
-      navigate('/login', {
+      navigate("/login", {
         state: {
           from:
-            `${location.pathname}` +
-            `${location.search}` +
-            `${location.hash}`,
+            `${location.pathname}` + `${location.search}` + `${location.hash}`,
         },
       });
 
@@ -221,12 +189,12 @@ export default function ListingDetail() {
     }
 
     if (!id) {
-      setSaveError('Listing ID is missing.');
+      setSaveError("Listing ID is missing.");
       return;
     }
 
     setSaveLoading(true);
-    setSaveError('');
+    setSaveError("");
 
     const normalizedId = String(id);
 
@@ -239,10 +207,7 @@ export default function ListingDetail() {
         setSaved(true);
       }
     } catch (err) {
-      setSaveError(
-        err?.message ||
-          'Could not update saved listings.'
-      );
+      setSaveError(err?.message || "Could not update saved listings.");
     } finally {
       setSaveLoading(false);
     }
@@ -259,10 +224,7 @@ export default function ListingDetail() {
           to="/"
           className="mb-6 inline-flex items-center gap-1 rounded text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
         >
-          <ArrowLeft
-            size={16}
-            aria-hidden="true"
-          />
+          <ArrowLeft size={16} aria-hidden="true" />
           Back to listings
         </Link>
 
@@ -276,13 +238,9 @@ export default function ListingDetail() {
             className="mx-auto mb-2"
           />
 
-          <p className="font-medium">
-            Could not load listing
-          </p>
+          <p className="font-medium">Could not load listing</p>
 
-          <p className="mt-1 text-sm">
-            {error || 'Listing not found.'}
-          </p>
+          <p className="mt-1 text-sm">{error || "Listing not found."}</p>
         </div>
       </div>
     );
@@ -318,25 +276,17 @@ export default function ListingDetail() {
     is_live,
   } = listing;
 
-  const liveStatus = normalizeBoolean(
-    is_live,
-    true
-  );
+  const liveStatus = normalizeBoolean(is_live, true);
 
   const isLive = liveStatus === true;
 
-  const latitudeNumber =
-    toFiniteNumber(latitude);
+  const latitudeNumber = toFiniteNumber(latitude);
 
-  const longitudeNumber =
-    toFiniteNumber(longitude);
+  const longitudeNumber = toFiniteNumber(longitude);
 
-  const hasCoordinates =
-    latitudeNumber !== null &&
-    longitudeNumber !== null;
+  const hasCoordinates = latitudeNumber !== null && longitudeNumber !== null;
 
-  const normalizedListingId =
-    String(listing_id ?? id);
+  const normalizedListingId = String(listing_id ?? id);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
@@ -344,19 +294,13 @@ export default function ListingDetail() {
         to="/"
         className="mb-6 inline-flex items-center gap-1 rounded text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
       >
-        <ArrowLeft
-          size={16}
-          aria-hidden="true"
-        />
+        <ArrowLeft size={16} aria-hidden="true" />
         Back to listings
       </Link>
 
       {!isLive && (
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          <AlertTriangle
-            size={16}
-            aria-hidden="true"
-          />
+          <AlertTriangle size={16} aria-hidden="true" />
           This listing is currently inactive.
         </div>
       )}
@@ -376,37 +320,27 @@ export default function ListingDetail() {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-navy-900">
-                  {apartment_name ||
-                    'Unnamed property'}
+                  {apartment_name || "Unnamed property"}
                 </h1>
 
                 <p className="mt-1 flex items-center gap-1 text-sm text-gray-500">
-                  <MapPin
-                    size={13}
-                    aria-hidden="true"
-                  />
+                  <MapPin size={13} aria-hidden="true" />
 
-                  {titleCase(locality) ||
-                    'Locality unavailable'}
+                  {titleCase(locality) || "Locality unavailable"}
 
-                  {hasValue(floor) &&
-                    hasValue(total_floors) && (
-                      <>
-                        {' · '}
-                        Floor {floor} of{' '}
-                        {total_floors}
-                      </>
-                    )}
+                  {hasValue(floor) && hasValue(total_floors) && (
+                    <>
+                      {" · "}
+                      Floor {floor} of {total_floors}
+                    </>
+                  )}
                 </p>
               </div>
 
               <div className="flex shrink-0 flex-col items-end gap-2">
                 {Boolean(is_verified) && (
                   <span className="flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600">
-                    <Shield
-                      size={12}
-                      aria-hidden="true"
-                    />
+                    <Shield size={12} aria-hidden="true" />
                     Verified
                   </span>
                 )}
@@ -418,33 +352,25 @@ export default function ListingDetail() {
                   aria-pressed={saved}
                   aria-label={
                     saved
-                      ? 'Remove listing from saved listings'
-                      : 'Save listing'
+                      ? "Remove listing from saved listings"
+                      : "Save listing"
                   }
                   className={[
-                    'flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-emerald-400',
-                    'disabled:cursor-not-allowed disabled:opacity-50',
+                    "flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-emerald-400",
+                    "disabled:cursor-not-allowed disabled:opacity-50",
                     saved
-                      ? 'border-red-200 bg-red-50 text-red-500'
-                      : 'border-gray-200 text-gray-500 hover:border-gray-400',
-                  ].join(' ')}
+                      ? "border-red-200 bg-red-50 text-red-500"
+                      : "border-gray-200 text-gray-500 hover:border-gray-400",
+                  ].join(" ")}
                 >
                   <Heart
                     size={13}
                     aria-hidden="true"
-                    fill={
-                      saved
-                        ? 'currentColor'
-                        : 'none'
-                    }
+                    fill={saved ? "currentColor" : "none"}
                   />
 
-                  {saveLoading
-                    ? 'Saving…'
-                    : saved
-                      ? 'Saved'
-                      : 'Save'}
+                  {saveLoading ? "Saving…" : saved ? "Saved" : "Save"}
                 </button>
               </div>
             </div>
@@ -455,29 +381,26 @@ export default function ListingDetail() {
               </p>
 
               <p className="mt-1 text-sm text-gray-400">
-                {formatPricePerSqft(
-                  price,
-                  carpet_area
-                )}
+                {formatPricePerSqft(price, carpet_area)}
               </p>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 {
-                  label: 'Bedrooms',
+                  label: "Bedrooms",
                   value: bedroom,
                 },
                 {
-                  label: 'Bathrooms',
+                  label: "Bathrooms",
                   value: bathroom,
                 },
                 {
-                  label: 'Balconies',
+                  label: "Balconies",
                   value: balcony,
                 },
                 {
-                  label: 'Parking',
+                  label: "Parking",
                   value: covered_parking,
                 },
               ].map(({ label, value }) =>
@@ -490,9 +413,7 @@ export default function ListingDetail() {
                       {value}
                     </p>
 
-                    <p className="mt-0.5 text-xs text-gray-400">
-                      {label}
-                    </p>
+                    <p className="mt-0.5 text-xs text-gray-400">{label}</p>
                   </div>
                 ) : null
               )}
@@ -504,46 +425,23 @@ export default function ListingDetail() {
               Property details
             </h2>
 
-            <Stat
-              label="Property type"
-              value={titleCase(
-                property_type
-              )}
-            />
+            <Stat label="Property type" value={titleCase(property_type)} />
 
-            <Stat
-              label="Carpet area"
-              value={formatArea(
-                carpet_area
-              )}
-            />
+            <Stat label="Carpet area" value={formatArea(carpet_area)} />
 
             <Stat
               label="Super built-up area"
-              value={formatArea(
-                super_built_up_area
-              )}
+              value={formatArea(super_built_up_area)}
             />
 
-            <Stat
-              label="Furnishing"
-              value={titleCase(
-                furnishing
-              )}
-            />
+            <Stat label="Furnishing" value={titleCase(furnishing)} />
 
-            <Stat
-              label="Facing"
-              value={titleCase(
-                facing_direction
-              )}
-            />
+            <Stat label="Facing" value={titleCase(facing_direction)} />
 
             <Stat
               label="Floor"
               value={
-                hasValue(floor) &&
-                hasValue(total_floors)
+                hasValue(floor) && hasValue(total_floors)
                   ? `${floor} / ${total_floors}`
                   : floor
               }
@@ -554,9 +452,7 @@ export default function ListingDetail() {
                 label="Project"
                 value={
                   <Link
-                    to={`/projects/${encodeURIComponent(
-                      String(project_id)
-                    )}`}
+                    to={`/projects/${encodeURIComponent(String(project_id))}`}
                     className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     {project_id}
@@ -565,36 +461,15 @@ export default function ListingDetail() {
               />
             )}
 
-            <Stat
-              label="Listed on"
-              value={formatDate(
-                posted_at
-              )}
-            />
-
-            <Stat
-              label="Listing ID"
-              value={
-                <span className="font-mono text-xs">
-                  {normalizedListingId}
-                </span>
-              }
-            />
+            <Stat label="Listed on" value={formatDate(posted_at)} />
           </div>
 
           {hasValue(description) && (
             <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-3 font-semibold text-gray-800">
-                Description
-              </h2>
+              <h2 className="mb-3 font-semibold text-gray-800">Description</h2>
 
               <p className="whitespace-pre-line text-sm leading-relaxed text-gray-600">
                 {String(description)}
-              </p>
-
-              <p className="mt-3 text-xs text-gray-400">
-                Seller's own text — shown as
-                written.
               </p>
             </div>
           )}
@@ -606,9 +481,7 @@ export default function ListingDetail() {
               Contact
             </h2>
 
-            <p className="text-sm font-medium">
-              {posted_by_name || '—'}
-            </p>
+            <p className="text-sm font-medium">{posted_by_name || "—"}</p>
 
             {hasValue(posted_by) && (
               <p className="mt-0.5 text-xs capitalize text-gray-500">
@@ -616,19 +489,12 @@ export default function ListingDetail() {
               </p>
             )}
 
-            {hasValue(
-              posted_by_contact
-            ) && (
+            {hasValue(posted_by_contact) && (
               <a
-                href={`tel:${String(
-                  posted_by_contact
-                )}`}
+                href={`tel:${String(posted_by_contact)}`}
                 className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400"
               >
-                <Phone
-                  size={15}
-                  aria-hidden="true"
-                />
+                <Phone size={15} aria-hidden="true" />
 
                 {posted_by_contact}
               </a>
@@ -644,22 +510,16 @@ export default function ListingDetail() {
                 className="flex items-center justify-between px-4 py-3 text-sm text-blue-600 transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <span className="flex items-center gap-1.5">
-                  <MapPin
-                    size={14}
-                    aria-hidden="true"
-                  />
+                  <MapPin size={14} aria-hidden="true" />
                   View on Google Maps
                 </span>
 
-                <ExternalLink
-                  size={13}
-                  aria-hidden="true"
-                />
+                <ExternalLink size={13} aria-hidden="true" />
               </a>
 
               <div className="px-4 pb-3 text-xs text-gray-400">
                 {latitudeNumber.toFixed(5)}
-                {', '}
+                {", "}
                 {longitudeNumber.toFixed(5)}
               </div>
             </div>
@@ -672,23 +532,15 @@ export default function ListingDetail() {
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
-              <span>
-                View on{' '}
-                {website ||
-                  'original source'}
-              </span>
+              <span>View on {website || "original source"}</span>
 
-              <ExternalLink
-                size={13}
-                aria-hidden="true"
-              />
+              <ExternalLink size={13} aria-hidden="true" />
             </a>
           )}
 
           <div className="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-500">
-            Posted{' '}
-            {formatRelative(posted_at)}
-            {' · '}
+            Posted {formatRelative(posted_at)}
+            {" · "}
             {formatDate(posted_at)}
           </div>
         </div>

@@ -1,5 +1,3 @@
-// src/utils/formatters.js
-
 /* -------------------------------------------------------------------------- */
 /* Numeric helpers                                                            */
 /* -------------------------------------------------------------------------- */
@@ -7,9 +5,7 @@
 function toFiniteNumber(value) {
   const number = Number(value);
 
-  return Number.isFinite(number)
-    ? number
-    : null;
+  return Number.isFinite(number) ? number : null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -26,36 +22,28 @@ export function formatPrice(rupees) {
    * Do not present them as legitimate property prices.
    */
   if (value === null || value <= 0) {
-    return '—';
+    return "—";
   }
 
   if (value >= 1_00_00_000) {
-    return `₹${(
-      value / 1_00_00_000
-    ).toFixed(2)} Cr`;
+    return `₹${(value / 1_00_00_000).toFixed(2)} Cr`;
   }
 
   if (value >= 1_00_000) {
-    return `₹${(
-      value / 1_00_000
-    ).toFixed(2)} L`;
+    return `₹${(value / 1_00_000).toFixed(2)} L`;
   }
 
-  return `₹${Math.round(
-    value
-  ).toLocaleString('en-IN')}`;
+  return `₹${Math.round(value).toLocaleString("en-IN")}`;
 }
 
 export function formatRent(rupees) {
   const value = toFiniteNumber(rupees);
 
   if (value === null || value < 0) {
-    return '—';
+    return "—";
   }
 
-  return `₹${Math.round(
-    value
-  ).toLocaleString('en-IN')}/mo`;
+  return `₹${Math.round(value).toLocaleString("en-IN")}/mo`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -66,12 +54,10 @@ export function formatArea(sqft) {
   const value = toFiniteNumber(sqft);
 
   if (value === null || value <= 0) {
-    return '—';
+    return "—";
   }
 
-  return `${Math.round(
-    value
-  ).toLocaleString('en-IN')} sqft`;
+  return `${Math.round(value).toLocaleString("en-IN")} sqft`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -93,15 +79,10 @@ export function formatArea(sqft) {
  * Therefore this function intentionally returns the unrounded
  * numerical ratio.
  */
-export function pricePerSqft(
-  price,
-  area
-) {
-  const priceValue =
-    toFiniteNumber(price);
+export function pricePerSqft(price, area) {
+  const priceValue = toFiniteNumber(price);
 
-  const areaValue =
-    toFiniteNumber(area);
+  const areaValue = toFiniteNumber(area);
 
   if (
     priceValue === null ||
@@ -112,32 +93,20 @@ export function pricePerSqft(
     return null;
   }
 
-  return (
-    priceValue / areaValue
-  );
+  return priceValue / areaValue;
 }
 
-export function formatPricePerSqft(
-  price,
-  area
-) {
-  const value =
-    pricePerSqft(
-      price,
-      area
-    );
+export function formatPricePerSqft(price, area) {
+  const value = pricePerSqft(price, area);
 
   if (value === null) {
-    return '—';
+    return "—";
   }
 
-  return `₹${value.toLocaleString(
-    'en-IN',
-    {
-      maximumFractionDigits: 2,
-      minimumFractionDigits: 0,
-    }
-  )}/sqft`;
+  return `₹${value.toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+  })}/sqft`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -146,64 +115,51 @@ export function formatPricePerSqft(
 
 export function formatDate(iso) {
   if (!iso) {
-    return '—';
+    return "—";
   }
 
   const date = new Date(iso);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return '—';
+  if (Number.isNaN(date.getTime())) {
+    return "—";
   }
 
-  return date.toLocaleDateString(
-    'en-IN',
-    {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }
-  );
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function formatRelative(iso) {
   if (!iso) {
-    return '—';
+    return "—";
   }
 
-  const timestamp =
-    new Date(iso).getTime();
+  const timestamp = new Date(iso).getTime();
 
-  if (
-    Number.isNaN(timestamp)
-  ) {
-    return '—';
+  if (Number.isNaN(timestamp)) {
+    return "—";
   }
 
-  const diff =
-    Date.now() - timestamp;
+  const diff = Date.now() - timestamp;
 
   /*
    * A future timestamp should not be displayed
    * as a negative relative duration.
    */
   if (diff < 0) {
-    return 'Recently';
+    return "Recently";
   }
 
-  const days = Math.floor(
-    diff / 86_400_000
-  );
+  const days = Math.floor(diff / 86_400_000);
 
   if (days === 0) {
-    return 'Today';
+    return "Today";
   }
 
   if (days === 1) {
-    return 'Yesterday';
+    return "Yesterday";
   }
 
   if (days < 30) {
@@ -211,14 +167,10 @@ export function formatRelative(iso) {
   }
 
   if (days < 365) {
-    return `${Math.floor(
-      days / 30
-    )}mo ago`;
+    return `${Math.floor(days / 30)}mo ago`;
   }
 
-  return `${Math.floor(
-    days / 365
-  )}yr ago`;
+  return `${Math.floor(days / 365)}yr ago`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -226,32 +178,19 @@ export function formatRelative(iso) {
 /* -------------------------------------------------------------------------- */
 
 export function capitalize(value) {
-  if (
-    typeof value !== 'string' ||
-    value.length === 0
-  ) {
-    return '';
+  if (typeof value !== "string" || value.length === 0) {
+    return "";
   }
 
-  return (
-    value.charAt(0).toUpperCase() +
-    value.slice(1)
-  );
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 export function titleCase(value) {
-  if (
-    typeof value !== 'string' ||
-    value.trim().length === 0
-  ) {
-    return '';
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return "";
   }
 
-  return value
-    .trim()
-    .split(/\s+/)
-    .map(capitalize)
-    .join(' ');
+  return value.trim().split(/\s+/).map(capitalize).join(" ");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -259,16 +198,10 @@ export function titleCase(value) {
 /* -------------------------------------------------------------------------- */
 
 export function bhkLabel(bedrooms) {
-  const value =
-    toFiniteNumber(
-      bedrooms
-    );
+  const value = toFiniteNumber(bedrooms);
 
-  if (
-    value === null ||
-    value <= 0
-  ) {
-    return '—';
+  if (value === null || value <= 0) {
+    return "—";
   }
 
   return `${value} BHK`;

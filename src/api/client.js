@@ -1,25 +1,18 @@
-// src/api/client.js
-
-import {
-  getApiKey,
-  getBaseUrl,
-} from '../config.js';
+import { getApiKey, getBaseUrl } from "../config.js";
 
 /* -------------------------------------------------------------------------- */
 /* Constants                                                                  */
 /* -------------------------------------------------------------------------- */
 
 const STORAGE_KEYS = {
-  accessToken: 'ivy_token',
-  refreshToken: 'ivy_refresh_token',
-  user: 'ivy_user',
-  expiresAt: 'ivy_token_expires',
+  accessToken: "ivy_token",
+  refreshToken: "ivy_refresh_token",
+  user: "ivy_user",
+  expiresAt: "ivy_token_expires",
 };
 
 const REQUEST_TIMEOUT_MS = 20_000;
-
 const MAX_RETRIES = 3;
-
 const CLOCK_SKEW_MS = 30_000;
 
 /* -------------------------------------------------------------------------- */
@@ -27,51 +20,35 @@ const CLOCK_SKEW_MS = 30_000;
 /* -------------------------------------------------------------------------- */
 
 export function getToken() {
-  return localStorage.getItem(
-    STORAGE_KEYS.accessToken
-  );
+  return localStorage.getItem(STORAGE_KEYS.accessToken);
 }
 
 export function getRefreshToken() {
-  return localStorage.getItem(
-    STORAGE_KEYS.refreshToken
-  );
+  return localStorage.getItem(STORAGE_KEYS.refreshToken);
 }
 
 export function setToken(token) {
   if (!token) {
-    localStorage.removeItem(
-      STORAGE_KEYS.accessToken
-    );
+    localStorage.removeItem(STORAGE_KEYS.accessToken);
 
     return;
   }
 
-  localStorage.setItem(
-    STORAGE_KEYS.accessToken,
-    String(token)
-  );
+  localStorage.setItem(STORAGE_KEYS.accessToken, String(token));
 }
 
 export function setRefreshToken(token) {
   if (!token) {
-    localStorage.removeItem(
-      STORAGE_KEYS.refreshToken
-    );
+    localStorage.removeItem(STORAGE_KEYS.refreshToken);
 
     return;
   }
 
-  localStorage.setItem(
-    STORAGE_KEYS.refreshToken,
-    String(token)
-  );
+  localStorage.setItem(STORAGE_KEYS.refreshToken, String(token));
 }
 
 export function getStoredUser() {
-  const raw = localStorage.getItem(
-    STORAGE_KEYS.user
-  );
+  const raw = localStorage.getItem(STORAGE_KEYS.user);
 
   if (!raw) {
     return null;
@@ -80,9 +57,7 @@ export function getStoredUser() {
   try {
     return JSON.parse(raw);
   } catch {
-    localStorage.removeItem(
-      STORAGE_KEYS.user
-    );
+    localStorage.removeItem(STORAGE_KEYS.user);
 
     return null;
   }
@@ -90,25 +65,18 @@ export function getStoredUser() {
 
 function setStoredUser(user) {
   if (!user) {
-    localStorage.removeItem(
-      STORAGE_KEYS.user
-    );
+    localStorage.removeItem(STORAGE_KEYS.user);
 
     return;
   }
 
-  localStorage.setItem(
-    STORAGE_KEYS.user,
-    JSON.stringify(user)
-  );
+  localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
 }
 
 export function clearToken() {
-  Object.values(STORAGE_KEYS).forEach(
-    (key) => {
-      localStorage.removeItem(key);
-    }
-  );
+  Object.values(STORAGE_KEYS).forEach((key) => {
+    localStorage.removeItem(key);
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -116,52 +84,29 @@ export function clearToken() {
 /* -------------------------------------------------------------------------- */
 
 function setTokenExpiry(expiresInSeconds) {
-  const seconds = Number(
-    expiresInSeconds
-  );
+  const seconds = Number(expiresInSeconds);
 
-  if (
-    !Number.isFinite(seconds) ||
-    seconds <= 0
-  ) {
-    localStorage.removeItem(
-      STORAGE_KEYS.expiresAt
-    );
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    localStorage.removeItem(STORAGE_KEYS.expiresAt);
 
     return;
   }
 
-  const expiresAt =
-    Date.now() +
-    seconds * 1000;
+  const expiresAt = Date.now() + seconds * 1000;
 
-  localStorage.setItem(
-    STORAGE_KEYS.expiresAt,
-    String(expiresAt)
-  );
+  localStorage.setItem(STORAGE_KEYS.expiresAt, String(expiresAt));
 }
 
 export function isTokenValid() {
   const token = getToken();
 
-  const expiresAt = Number(
-    localStorage.getItem(
-      STORAGE_KEYS.expiresAt
-    ) || 0
-  );
+  const expiresAt = Number(localStorage.getItem(STORAGE_KEYS.expiresAt) || 0);
 
-  if (
-    !token ||
-    !Number.isFinite(expiresAt) ||
-    expiresAt <= 0
-  ) {
+  if (!token || !Number.isFinite(expiresAt) || expiresAt <= 0) {
     return false;
   }
 
-  return (
-    Date.now() <
-    expiresAt - CLOCK_SKEW_MS
-  );
+  return Date.now() < expiresAt - CLOCK_SKEW_MS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -169,11 +114,7 @@ export function isTokenValid() {
 /* -------------------------------------------------------------------------- */
 
 function emitUnauthorized() {
-  window.dispatchEvent(
-    new CustomEvent(
-      'auth:unauthorized'
-    )
-  );
+  window.dispatchEvent(new CustomEvent("auth:unauthorized"));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -185,41 +126,26 @@ function throwIfAborted(signal) {
     return;
   }
 
-  throw new DOMException(
-    'Request aborted.',
-    'AbortError'
-  );
+  throw new DOMException("Request aborted.", "AbortError");
 }
 
 /* -------------------------------------------------------------------------- */
 /* Error handling                                                             */
 /* -------------------------------------------------------------------------- */
 
-async function getErrorMessage(
-  response
-) {
+async function getErrorMessage(response) {
   try {
-    const payload =
-      await response.json();
+    const payload = await response.json();
 
-    if (
-      typeof payload?.detail ===
-      'string'
-    ) {
+    if (typeof payload?.detail === "string") {
       return payload.detail;
     }
 
-    if (
-      typeof payload?.message ===
-      'string'
-    ) {
+    if (typeof payload?.message === "string") {
       return payload.message;
     }
 
-    if (
-      typeof payload?.error ===
-      'string'
-    ) {
+    if (typeof payload?.error === "string") {
       return payload.error;
     }
   } catch {
@@ -233,38 +159,21 @@ async function getErrorMessage(
 /* Query parameters                                                           */
 /* -------------------------------------------------------------------------- */
 
-function cleanParams(
-  params = {}
-) {
+function cleanParams(params = {}) {
   return Object.fromEntries(
     Object.entries(params).filter(
-      ([, value]) =>
-        value !== undefined &&
-        value !== null &&
-        value !== ''
+      ([, value]) => value !== undefined && value !== null && value !== ""
     )
   );
 }
 
-function buildUrl(
-  path,
-  params = {}
-) {
-  const url = new URL(
-    `${getBaseUrl()}${path}`
-  );
+function buildUrl(path, params = {}) {
+  const url = new URL(`${getBaseUrl()}${path}`);
 
-  const cleaned =
-    cleanParams(params);
+  const cleaned = cleanParams(params);
 
-  for (
-    const [key, value] of
-    Object.entries(cleaned)
-  ) {
-    url.searchParams.set(
-      key,
-      String(value)
-    );
+  for (const [key, value] of Object.entries(cleaned)) {
+    url.searchParams.set(key, String(value));
   }
 
   return url.toString();
@@ -274,72 +183,46 @@ function buildUrl(
 /* Fetch with timeout                                                         */
 /* -------------------------------------------------------------------------- */
 
-async function fetchWithTimeout(
-  url,
-  options = {},
-  signal
-) {
+async function fetchWithTimeout(url, options = {}, signal) {
   throwIfAborted(signal);
 
-  const timeoutController =
-    new AbortController();
+  const timeoutController = new AbortController();
 
   let timedOut = false;
 
-  const timeoutId =
-    window.setTimeout(() => {
-      timedOut = true;
+  const timeoutId = window.setTimeout(() => {
+    timedOut = true;
 
-      timeoutController.abort();
-    }, REQUEST_TIMEOUT_MS);
+    timeoutController.abort();
+  }, REQUEST_TIMEOUT_MS);
 
   const abortHandler = () => {
     timeoutController.abort();
   };
 
-  signal?.addEventListener(
-    'abort',
-    abortHandler,
-    { once: true }
-  );
+  signal?.addEventListener("abort", abortHandler, { once: true });
 
   try {
-    const response =
-      await fetch(url, {
-        ...options,
-        signal:
-          timeoutController.signal,
-      });
+    const response = await fetch(url, {
+      ...options,
+      signal: timeoutController.signal,
+    });
 
     return response;
   } catch (error) {
     if (signal?.aborted) {
-      throw new DOMException(
-        'Request aborted.',
-        'AbortError'
-      );
+      throw new DOMException("Request aborted.", "AbortError");
     }
 
-    if (
-      timedOut ||
-      error?.name ===
-        'AbortError'
-    ) {
-      throw new Error(
-        'The request timed out. Please try again.'
-      );
+    if (timedOut || error?.name === "AbortError") {
+      throw new Error("The request timed out. Please try again.");
     }
 
     throw error;
   } finally {
-    window.clearTimeout(
-      timeoutId
-    );
+    window.clearTimeout(timeoutId);
 
-    signal?.removeEventListener(
-      'abort',
-      abortHandler
-    );
+    signal?.removeEventListener("abort", abortHandler);
   }
 }
 
@@ -356,109 +239,76 @@ async function fetchWithTimeout(
 
 let refreshPromise = null;
 
-export async function refreshAccessToken(
-  options = {}
-) {
+export async function refreshAccessToken(options = {}) {
   if (refreshPromise) {
     return refreshPromise;
   }
 
-  const refreshToken =
-    getRefreshToken();
+  const refreshToken = getRefreshToken();
 
   if (!refreshToken) {
-    throw new Error(
-      'No refresh token available.'
-    );
+    throw new Error("No refresh token available.");
   }
 
-  throwIfAborted(
-    options.signal
-  );
+  throwIfAborted(options.signal);
 
-  refreshPromise =
-    (async () => {
-      const response =
-        await fetchWithTimeout(
-          `${getBaseUrl()}/auth/refresh`,
-          {
-            method: 'POST',
+  refreshPromise = (async () => {
+    const response = await fetchWithTimeout(
+      `${getBaseUrl()}/auth/refresh`,
+      {
+        method: "POST",
 
-            headers: {
-              Accept:
-                'application/json',
+        headers: {
+          Accept: "application/json",
 
-              'Content-Type':
-                'application/json',
+          "Content-Type": "application/json",
 
-              'X-API-Key':
-                getApiKey(),
-            },
+          "X-API-Key": getApiKey(),
+        },
 
-            body: JSON.stringify({
-              refresh_token:
-                refreshToken,
-            }),
-          },
-          options.signal
-        );
+        body: JSON.stringify({
+          refresh_token: refreshToken,
+        }),
+      },
+      options.signal
+    );
 
-      if (!response.ok) {
-        const message =
-          await getErrorMessage(
-            response
-          );
+    if (!response.ok) {
+      const message = await getErrorMessage(response);
 
-        clearToken();
-        emitUnauthorized();
+      clearToken();
+      emitUnauthorized();
 
-        throw new Error(
-          message
-        );
-      }
+      throw new Error(message);
+    }
 
-      const data =
-        await response.json();
+    const data = await response.json();
 
-      if (
-        !data?.access_token
-      ) {
-        clearToken();
-        emitUnauthorized();
+    if (!data?.access_token) {
+      clearToken();
+      emitUnauthorized();
 
-        throw new Error(
-          'Refresh succeeded but no access_token was returned.'
-        );
-      }
+      throw new Error("Refresh succeeded but no access_token was returned.");
+    }
 
-      setToken(
-        data.access_token
-      );
+    setToken(data.access_token);
 
-      /*
-       * Some refresh APIs rotate the
-       * refresh token.
-       */
-      if (
-        data.refresh_token
-      ) {
-        setRefreshToken(
-          data.refresh_token
-        );
-      }
+    /*
+     * Some refresh APIs rotate the
+     * refresh token.
+     */
+    if (data.refresh_token) {
+      setRefreshToken(data.refresh_token);
+    }
 
-      setTokenExpiry(
-        data.expires_in
-      );
+    setTokenExpiry(data.expires_in);
 
-      if (data.user) {
-        setStoredUser(
-          data.user
-        );
-      }
+    if (data.user) {
+      setStoredUser(data.user);
+    }
 
-      return data;
-    })();
+    return data;
+  })();
 
   try {
     return await refreshPromise;
@@ -475,7 +325,7 @@ async function apiFetch(
   path,
   {
     params = {},
-    method = 'GET',
+    method = "GET",
     body,
     auth = false,
     signal,
@@ -488,20 +338,14 @@ async function apiFetch(
   /*
    * Proactively refresh an expired access token.
    */
-  if (
-    auth &&
-    !isTokenValid()
-  ) {
-    const refreshToken =
-      getRefreshToken();
+  if (auth && !isTokenValid()) {
+    const refreshToken = getRefreshToken();
 
     if (!refreshToken) {
       clearToken();
       emitUnauthorized();
 
-      throw new Error(
-        'Your session has expired. Please log in again.'
-      );
+      throw new Error("Your session has expired. Please log in again.");
     }
 
     await refreshAccessToken({
@@ -510,34 +354,23 @@ async function apiFetch(
   }
 
   const headers = {
-    Accept:
-      'application/json',
+    Accept: "application/json",
 
-    'X-API-Key':
-      getApiKey(),
+    "X-API-Key": getApiKey(),
   };
 
-  if (
-    body !== undefined
-  ) {
-    headers[
-      'Content-Type'
-    ] =
-      'application/json';
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
   }
 
   if (auth) {
-    const token =
-      getToken();
+    const token = getToken();
 
     if (!token) {
-      throw new Error(
-        'Authentication required. Please log in first.'
-      );
+      throw new Error("Authentication required. Please log in first.");
     }
 
-    headers.Authorization =
-      `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const requestOptions = {
@@ -546,9 +379,7 @@ async function apiFetch(
 
     ...(body !== undefined
       ? {
-          body: JSON.stringify(
-            body
-          ),
+          body: JSON.stringify(body),
         }
       : {}),
   };
@@ -556,20 +387,13 @@ async function apiFetch(
   let response;
 
   try {
-    response =
-      await fetchWithTimeout(
-        buildUrl(
-          path,
-          params
-        ),
-        requestOptions,
-        signal
-      );
+    response = await fetchWithTimeout(
+      buildUrl(path, params),
+      requestOptions,
+      signal
+    );
   } catch (error) {
-    if (
-      error?.name ===
-      'AbortError'
-    ) {
+    if (error?.name === "AbortError") {
       throw error;
     }
 
@@ -580,58 +404,32 @@ async function apiFetch(
      * not retried here because blindly
      * repeating mutations can be unsafe.
      */
-    if (
-      method === 'GET' &&
-      retry &&
-      retryCount < MAX_RETRIES
-    ) {
-      const delay =
-        500 *
-        2 ** retryCount;
+    if (method === "GET" && retry && retryCount < MAX_RETRIES) {
+      const delay = 500 * 2 ** retryCount;
 
-      await new Promise(
-        (
-          resolve,
-          reject
-        ) => {
-          const timeoutId =
-            window.setTimeout(
-              resolve,
-              delay
-            );
+      await new Promise((resolve, reject) => {
+        const timeoutId = window.setTimeout(resolve, delay);
 
-          signal?.addEventListener(
-            'abort',
-            () => {
-              window.clearTimeout(
-                timeoutId
-              );
+        signal?.addEventListener(
+          "abort",
+          () => {
+            window.clearTimeout(timeoutId);
 
-              reject(
-                new DOMException(
-                  'Request aborted.',
-                  'AbortError'
-                )
-              );
-            },
-            { once: true }
-          );
-        }
-      );
+            reject(new DOMException("Request aborted.", "AbortError"));
+          },
+          { once: true }
+        );
+      });
 
-      return apiFetch(
-        path,
-        {
-          params,
-          method,
-          body,
-          auth,
-          signal,
-          retry,
-          retryCount:
-            retryCount + 1,
-        }
-      );
+      return apiFetch(path, {
+        params,
+        method,
+        body,
+        auth,
+        signal,
+        retry,
+        retryCount: retryCount + 1,
+      });
     }
 
     throw error;
@@ -641,75 +439,46 @@ async function apiFetch(
    * Access token may expire between
    * the proactive check and the request.
    */
-  if (
-    response.status === 401 &&
-    auth &&
-    retry &&
-    getRefreshToken()
-  ) {
+  if (response.status === 401 && auth && retry && getRefreshToken()) {
     await refreshAccessToken({
       signal,
     });
 
-    return apiFetch(
-      path,
-      {
-        params,
-        method,
-        body,
-        auth,
-        signal,
-        retry: false,
-        retryCount,
-      }
-    );
+    return apiFetch(path, {
+      params,
+      method,
+      body,
+      auth,
+      signal,
+      retry: false,
+      retryCount,
+    });
   }
 
   /*
    * No usable refresh token or the
    * retry already happened.
    */
-  if (
-    response.status === 401 &&
-    auth
-  ) {
-    const message =
-      await getErrorMessage(
-        response
-      );
+  if (response.status === 401 && auth) {
+    const message = await getErrorMessage(response);
 
     clearToken();
     emitUnauthorized();
 
-    throw new Error(
-      message
-    );
+    throw new Error(message);
   }
 
   if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(
-        response
-      )
-    );
+    throw new Error(await getErrorMessage(response));
   }
 
-  if (
-    response.status === 204
-  ) {
+  if (response.status === 204) {
     return null;
   }
 
-  const contentType =
-    response.headers.get(
-      'content-type'
-    ) || '';
+  const contentType = response.headers.get("content-type") || "";
 
-  if (
-    !contentType.includes(
-      'application/json'
-    )
-  ) {
+  if (!contentType.includes("application/json")) {
     return response.text();
   }
 
@@ -720,66 +489,45 @@ async function apiFetch(
 /* Authentication                                                             */
 /* -------------------------------------------------------------------------- */
 
-export async function login(
-  email,
-  password,
-  options = {}
-) {
-  const normalizedEmail =
-    String(email ?? '').trim();
+export async function login(email, password, options = {}) {
+  const normalizedEmail = String(email ?? "").trim();
 
   if (!normalizedEmail) {
-    throw new Error(
-      'Email is required.'
-    );
+    throw new Error("Email is required.");
   }
 
   if (!password) {
-    throw new Error(
-      'Password is required.'
-    );
+    throw new Error("Password is required.");
   }
 
-  throwIfAborted(
+  throwIfAborted(options.signal);
+
+  const response = await fetchWithTimeout(
+    `${getBaseUrl()}/auth/login`,
+    {
+      method: "POST",
+
+      headers: {
+        Accept: "application/json",
+
+        "Content-Type": "application/json",
+
+        "X-API-Key": getApiKey(),
+      },
+
+      body: JSON.stringify({
+        email: normalizedEmail,
+        password,
+      }),
+    },
     options.signal
   );
 
-  const response =
-    await fetchWithTimeout(
-      `${getBaseUrl()}/auth/login`,
-      {
-        method: 'POST',
-
-        headers: {
-          Accept:
-            'application/json',
-
-          'Content-Type':
-            'application/json',
-
-          'X-API-Key':
-            getApiKey(),
-        },
-
-        body: JSON.stringify({
-          email:
-            normalizedEmail,
-          password,
-        }),
-      },
-      options.signal
-    );
-
   if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(
-        response
-      )
-    );
+    throw new Error(await getErrorMessage(response));
   }
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
   /*
    * Verified live API contract:
@@ -790,51 +538,31 @@ export async function login(
    * user
    */
 
-  if (
-    !data?.access_token
-  ) {
-    throw new Error(
-      'Login succeeded but no access_token was returned.'
-    );
+  if (!data?.access_token) {
+    throw new Error("Login succeeded but no access_token was returned.");
   }
 
-  setToken(
-    data.access_token
-  );
+  setToken(data.access_token);
 
-  if (
-    data.refresh_token
-  ) {
-    setRefreshToken(
-      data.refresh_token
-    );
+  if (data.refresh_token) {
+    setRefreshToken(data.refresh_token);
   }
 
-  setTokenExpiry(
-    data.expires_in
-  );
+  setTokenExpiry(data.expires_in);
 
-  setStoredUser(
-    data.user || null
-  );
+  setStoredUser(data.user || null);
 
   return data;
 }
 
-export async function logout(
-  options = {}
-) {
+export async function logout(options = {}) {
   try {
     if (getToken()) {
-      await apiFetch(
-        '/auth/logout',
-        {
-          method: 'POST',
-          auth: true,
-          signal:
-            options.signal,
-        }
-      );
+      await apiFetch("/auth/logout", {
+        method: "POST",
+        auth: true,
+        signal: options.signal,
+      });
     }
   } finally {
     clearToken();
@@ -845,36 +573,19 @@ export async function logout(
 /* Listings                                                                   */
 /* -------------------------------------------------------------------------- */
 
-export async function getListings(
-  params = {},
-  options = {}
-) {
-  return apiFetch(
-    '/v1/listings',
-    {
-      params:
-        cleanParams(params),
+export async function getListings(params = {}, options = {}) {
+  return apiFetch("/v1/listings", {
+    params: cleanParams(params),
 
-      auth: true,
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
-export async function getListing(
-  id,
-  options = {}
-) {
-  if (
-    id === undefined ||
-    id === null ||
-    String(id).trim() === ''
-  ) {
-    throw new Error(
-      'Listing ID is required.'
-    );
+export async function getListing(id, options = {}) {
+  if (id === undefined || id === null || String(id).trim() === "") {
+    throw new Error("Listing ID is required.");
   }
 
   /*
@@ -886,17 +597,11 @@ export async function getListing(
    * Therefore the plural endpoint
    * is the only one used here.
    */
-  return apiFetch(
-    `/v1/listings/${encodeURIComponent(
-      String(id)
-    )}`,
-    {
-      auth: true,
+  return apiFetch(`/v1/listings/${encodeURIComponent(String(id))}`, {
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
 /*
@@ -911,98 +616,52 @@ export async function getListing(
 /* Rentals                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export async function getRentals(
-  params = {},
-  options = {}
-) {
-  return apiFetch(
-    '/v1/rentals',
-    {
-      params:
-        cleanParams(params),
+export async function getRentals(params = {}, options = {}) {
+  return apiFetch("/v1/rentals", {
+    params: cleanParams(params),
 
-      auth: true,
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
-export async function getRental(
-  id,
-  options = {}
-) {
-  if (
-    id === undefined ||
-    id === null ||
-    String(id).trim() === ''
-  ) {
-    throw new Error(
-      'Rental ID is required.'
-    );
+export async function getRental(id, options = {}) {
+  if (id === undefined || id === null || String(id).trim() === "") {
+    throw new Error("Rental ID is required.");
   }
 
-  return apiFetch(
-    `/v1/rentals/${encodeURIComponent(
-      String(id)
-    )}`,
-    {
-      auth: true,
+  return apiFetch(`/v1/rentals/${encodeURIComponent(String(id))}`, {
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
 /* Projects                                                                   */
 /* -------------------------------------------------------------------------- */
 
-export async function getProjects(
-  params = {},
-  options = {}
-) {
-  return apiFetch(
-    '/v1/projects',
-    {
-      params:
-        cleanParams(params),
+export async function getProjects(params = {}, options = {}) {
+  return apiFetch("/v1/projects", {
+    params: cleanParams(params),
 
-      auth: true,
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
-export async function getProject(
-  id,
-  options = {}
-) {
-  if (
-    id === undefined ||
-    id === null ||
-    String(id).trim() === ''
-  ) {
-    throw new Error(
-      'Project ID is required.'
-    );
+export async function getProject(id, options = {}) {
+  if (id === undefined || id === null || String(id).trim() === "") {
+    throw new Error("Project ID is required.");
   }
 
-  return apiFetch(
-    `/v1/projects/${encodeURIComponent(
-      String(id)
-    )}`,
-    {
-      auth: true,
+  return apiFetch(`/v1/projects/${encodeURIComponent(String(id))}`, {
+    auth: true,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
 export async function getListingsByProject(
@@ -1013,18 +672,15 @@ export async function getListingsByProject(
   if (
     projectId === undefined ||
     projectId === null ||
-    String(projectId).trim() === ''
+    String(projectId).trim() === ""
   ) {
-    throw new Error(
-      'Project ID is required.'
-    );
+    throw new Error("Project ID is required.");
   }
 
   return getListings(
     {
       ...params,
-      project_id:
-        projectId,
+      project_id: projectId,
     },
     options
   );
@@ -1047,17 +703,17 @@ export async function getFavourites(options = {}) {
    * }
    */
 
-  return apiFetch('/v1/saved', {
+  return apiFetch("/v1/saved", {
     auth: true,
     signal: options.signal,
   });
 }
 
 export async function addFavourite(listingId, options = {}) {
-  const normalizedId = String(listingId ?? '').trim();
+  const normalizedId = String(listingId ?? "").trim();
 
   if (!normalizedId) {
-    throw new Error('Listing ID is required.');
+    throw new Error("Listing ID is required.");
   }
 
   /*
@@ -1073,8 +729,8 @@ export async function addFavourite(listingId, options = {}) {
    * Successful response: HTTP 201
    */
 
-  return apiFetch('/v1/saved', {
-    method: 'POST',
+  return apiFetch("/v1/saved", {
+    method: "POST",
     auth: true,
     body: {
       listing_id: normalizedId,
@@ -1084,10 +740,10 @@ export async function addFavourite(listingId, options = {}) {
 }
 
 export async function removeFavourite(listingId, options = {}) {
-  const normalizedId = String(listingId ?? '').trim();
+  const normalizedId = String(listingId ?? "").trim();
 
   if (!normalizedId) {
-    throw new Error('Listing ID is required.');
+    throw new Error("Listing ID is required.");
   }
 
   /*
@@ -1098,14 +754,11 @@ export async function removeFavourite(listingId, options = {}) {
    * Successful response: HTTP 200
    */
 
-  return apiFetch(
-    `/v1/saved/${encodeURIComponent(normalizedId)}`,
-    {
-      method: 'DELETE',
-      auth: true,
-      signal: options.signal,
-    }
-  );
+  return apiFetch(`/v1/saved/${encodeURIComponent(normalizedId)}`, {
+    method: "DELETE",
+    auth: true,
+    signal: options.signal,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1131,18 +784,12 @@ export async function removeFavourite(listingId, options = {}) {
 /* Health                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export async function getHealth(
-  options = {}
-) {
-  return apiFetch(
-    '/health',
-    {
-      auth: false,
+export async function getHealth(options = {}) {
+  return apiFetch("/health", {
+    auth: false,
 
-      signal:
-        options.signal,
-    }
-  );
+    signal: options.signal,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1201,31 +848,14 @@ export async function getHealth(
  */
 export async function fetchAll(
   loader,
-  {
-    pageSize = 50,
-    signal,
-    label = 'records',
-    onProgress,
-  } = {}
+  { pageSize = 50, signal, label = "records", onProgress } = {}
 ) {
-  if (
-    typeof loader !==
-    'function'
-  ) {
-    throw new TypeError(
-      'fetchAll requires a loader function.'
-    );
+  if (typeof loader !== "function") {
+    throw new TypeError("fetchAll requires a loader function.");
   }
 
-  if (
-    !Number.isInteger(
-      pageSize
-    ) ||
-    pageSize <= 0
-  ) {
-    throw new RangeError(
-      'fetchAll pageSize must be a positive integer.'
-    );
+  if (!Number.isInteger(pageSize) || pageSize <= 0) {
+    throw new RangeError("fetchAll pageSize must be a positive integer.");
   }
 
   const allRecords = [];
@@ -1236,25 +866,18 @@ export async function fetchAll(
 
   let pageNumber = 1;
 
-  let reportedTotal =
-    null;
+  let reportedTotal = null;
 
   while (true) {
     throwIfAborted(signal);
 
-    const response =
-      await loader({
-        offset,
-        limit: pageSize,
-        signal,
-      });
+    const response = await loader({
+      offset,
+      limit: pageSize,
+      signal,
+    });
 
-    if (
-      !response ||
-      !Array.isArray(
-        response.results
-      )
-    ) {
+    if (!response || !Array.isArray(response.results)) {
       throw new Error(
         `Invalid ${label} response at offset ${offset}: expected a results array.`
       );
@@ -1265,51 +888,31 @@ export async function fetchAll(
      * for discrepancy reporting, but NEVER
      * use it to stop pagination.
      */
-    if (
-      reportedTotal ===
-      null
-    ) {
-      const numericTotal =
-        Number(
-          response.total
-        );
+    if (reportedTotal === null) {
+      const numericTotal = Number(response.total);
 
-      if (
-        Number.isFinite(
-          numericTotal
-        ) &&
-        numericTotal >= 0
-      ) {
-        reportedTotal =
-          numericTotal;
+      if (Number.isFinite(numericTotal) && numericTotal >= 0) {
+        reportedTotal = numericTotal;
       }
     }
 
-    const results =
-      response.results;
+    const results = response.results;
 
     /*
      * Empty page is the only definitive
      * pagination termination condition.
      */
-    if (
-      results.length === 0
-    ) {
+    if (results.length === 0) {
       break;
     }
 
-    for (
-      const record of results
-    ) {
+    for (const record of results) {
       if (!record) {
         continue;
       }
 
       const id =
-        record.listing_id ??
-        record.rental_id ??
-        record.project_id ??
-        record.id;
+        record.listing_id ?? record.rental_id ?? record.project_id ?? record.id;
 
       /*
        * Records without IDs are retained
@@ -1319,46 +922,26 @@ export async function fetchAll(
        * silently dropping an ID-less record
        * would alter counts.
        */
-      if (
-        id === undefined ||
-        id === null
-      ) {
-        allRecords.push(
-          record
-        );
+      if (id === undefined || id === null) {
+        allRecords.push(record);
 
         continue;
       }
 
-      const normalizedId =
-        String(id);
+      const normalizedId = String(id);
 
-      if (
-        seenIds.has(
-          normalizedId
-        )
-      ) {
+      if (seenIds.has(normalizedId)) {
         continue;
       }
 
-      seenIds.add(
-        normalizedId
-      );
+      seenIds.add(normalizedId);
 
-      allRecords.push(
-        record
-      );
+      allRecords.push(record);
     }
 
     onProgress?.(
       pageNumber,
-      reportedTotal ===
-        null
-        ? null
-        : Math.ceil(
-            reportedTotal /
-              pageSize
-          ),
+      reportedTotal === null ? null : Math.ceil(reportedTotal / pageSize),
       allRecords.length
     );
 
@@ -1379,8 +962,7 @@ export async function fetchAll(
      * records is authoritative for local
      * analytics.
      */
-    total:
-      allRecords.length,
+    total: allRecords.length,
 
     /*
      * API-reported value is retained only

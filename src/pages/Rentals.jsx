@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Building2,
   ChevronDown,
@@ -8,32 +8,32 @@ import {
   RefreshCw,
   Search,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { fetchAll, getRentals } from '../api/client.js';
-import RentalCard from '../components/RentalCard.jsx';
-import Pagination from '../components/Pagination.jsx';
+import { fetchAll, getRentals } from "../api/client.js";
+import RentalCard from "../components/RentalCard.jsx";
+import Pagination from "../components/Pagination.jsx";
 
 const PAGE_SIZE = 20;
-const DEFAULT_LOCALITY = 'Golf Course Road';
+const DEFAULT_LOCALITY = "Golf Course Road";
 
 const BHK_OPTIONS = [
-  { value: '', label: 'All BHK' },
-  { value: '1', label: '1 BHK' },
-  { value: '2', label: '2 BHK' },
-  { value: '3', label: '3 BHK' },
-  { value: '4', label: '4 BHK' },
+  { value: "", label: "All BHK" },
+  { value: "1", label: "1 BHK" },
+  { value: "2", label: "2 BHK" },
+  { value: "3", label: "3 BHK" },
+  { value: "4", label: "4 BHK" },
 ];
 
 const FURNISHING_OPTIONS = [
-  { value: '', label: 'All furnishing' },
-  { value: 'fully furnished', label: 'Fully furnished' },
-  { value: 'semi furnished', label: 'Semi furnished' },
-  { value: 'unfurnished', label: 'Unfurnished' },
+  { value: "", label: "All furnishing" },
+  { value: "fully-furnished", label: "Fully-Furnished" },
+  { value: "semi-furnished", label: "Semi-Furnished" },
+  { value: "unfurnished", label: "Unfurnished" },
 ];
 
 function normalizeText(value) {
-  return String(value ?? '')
+  return String(value ?? "")
     .trim()
     .toLowerCase();
 }
@@ -52,28 +52,24 @@ function parseBhk(value) {
   const bhk = Number(value);
 
   if (!Number.isInteger(bhk) || bhk < 1) {
-    return '';
+    return "";
   }
 
   return String(bhk);
 }
 
 function getInitialFilters(searchParams) {
-  const localityParam = searchParams.get('locality');
+  const localityParam = searchParams.get("locality");
 
   return {
-    locality:
-      localityParam === null
-        ? DEFAULT_LOCALITY
-        : localityParam,
-    bhk: parseBhk(searchParams.get('bhk')),
-    furnishing:
-      searchParams.get('furnishing') || '',
+    locality: localityParam === null ? DEFAULT_LOCALITY : localityParam,
+    bhk: parseBhk(searchParams.get("bhk")),
+    furnishing: searchParams.get("furnishing") || "",
   };
 }
 
 function getPage(searchParams) {
-  return parsePage(searchParams.get('page'));
+  return parsePage(searchParams.get("page"));
 }
 
 function matchesLocality(rental, locality) {
@@ -99,10 +95,7 @@ function matchesFurnishing(rental, furnishing) {
     return true;
   }
 
-  return (
-    normalizeText(rental.furnishing) ===
-    normalizeText(furnishing)
-  );
+  return normalizeText(rental.furnishing) === normalizeText(furnishing);
 }
 
 function EmptyState({ hasFilters, onClear }) {
@@ -118,8 +111,8 @@ function EmptyState({ hasFilters, onClear }) {
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
         {hasFilters
-          ? 'Try changing your filters to see more rental properties.'
-          : 'There are no rental properties available.'}
+          ? "Try changing your filters to see more rental properties."
+          : "There are no rental properties available."}
       </p>
 
       {hasFilters && (
@@ -161,7 +154,7 @@ function ErrorState({ message, onRetry }) {
       </h2>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
-        {message || 'Something went wrong while loading rentals.'}
+        {message || "Something went wrong while loading rentals."}
       </p>
 
       <button
@@ -179,13 +172,11 @@ function ErrorState({ message, onRetry }) {
 export default function Rentals() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [filters, setFilters] = useState(() =>
-    getInitialFilters(searchParams)
-  );
+  const [filters, setFilters] = useState(() => getInitialFilters(searchParams));
 
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
 
   const page = getPage(searchParams);
@@ -211,7 +202,7 @@ export default function Rentals() {
 
     async function loadRentals() {
       setLoading(true);
-      setError('');
+      setError("");
 
       try {
         const response = await fetchAll(
@@ -226,23 +217,17 @@ export default function Rentals() {
           {
             pageSize: 50,
             signal: controller.signal,
-            label: 'rentals',
+            label: "rentals",
           }
         );
 
-        setRentals(
-          Array.isArray(response?.results)
-            ? response.results
-            : []
-        );
+        setRentals(Array.isArray(response?.results) ? response.results : []);
       } catch (err) {
-        if (err?.name === 'AbortError') {
+        if (err?.name === "AbortError") {
           return;
         }
 
-        setError(
-          err?.message || 'Failed to load rentals.'
-        );
+        setError(err?.message || "Failed to load rentals.");
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -260,46 +245,27 @@ export default function Rentals() {
   const filteredRentals = useMemo(() => {
     return rentals.filter((rental) => {
       return (
-        matchesLocality(
-          rental,
-          filters.locality
-        ) &&
-        matchesBhk(
-          rental,
-          filters.bhk
-        ) &&
-        matchesFurnishing(
-          rental,
-          filters.furnishing
-        )
+        matchesLocality(rental, filters.locality) &&
+        matchesBhk(rental, filters.bhk) &&
+        matchesFurnishing(rental, filters.furnishing)
       );
     });
   }, [rentals, filters]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredRentals.length / PAGE_SIZE)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredRentals.length / PAGE_SIZE));
 
-  const safePage = Math.min(
-    page,
-    totalPages
-  );
+  const safePage = Math.min(page, totalPages);
 
   const paginatedRentals = useMemo(() => {
     const start = (safePage - 1) * PAGE_SIZE;
 
-    return filteredRentals.slice(
-      start,
-      start + PAGE_SIZE
-    );
+    return filteredRentals.slice(start, start + PAGE_SIZE);
   }, [filteredRentals, safePage]);
 
   const hasOptionalFilters =
     Boolean(filters.bhk) ||
     Boolean(filters.furnishing) ||
-    normalizeText(filters.locality) !==
-      normalizeText(DEFAULT_LOCALITY);
+    normalizeText(filters.locality) !== normalizeText(DEFAULT_LOCALITY);
 
   function updateFilters(nextValues) {
     const nextFilters = {
@@ -311,27 +277,16 @@ export default function Rentals() {
 
     const nextParams = new URLSearchParams();
 
-    if (
-      normalizeText(nextFilters.locality)
-    ) {
-      nextParams.set(
-        'locality',
-        nextFilters.locality
-      );
+    if (normalizeText(nextFilters.locality)) {
+      nextParams.set("locality", nextFilters.locality);
     }
 
     if (nextFilters.bhk) {
-      nextParams.set(
-        'bhk',
-        nextFilters.bhk
-      );
+      nextParams.set("bhk", nextFilters.bhk);
     }
 
     if (nextFilters.furnishing) {
-      nextParams.set(
-        'furnishing',
-        nextFilters.furnishing
-      );
+      nextParams.set("furnishing", nextFilters.furnishing);
     }
 
     setSearchParams(nextParams, {
@@ -360,18 +315,15 @@ export default function Rentals() {
   function clearFilters() {
     const defaultFilters = {
       locality: DEFAULT_LOCALITY,
-      bhk: '',
-      furnishing: '',
+      bhk: "",
+      furnishing: "",
     };
 
     setFilters(defaultFilters);
 
     const nextParams = new URLSearchParams();
 
-    nextParams.set(
-      'locality',
-      DEFAULT_LOCALITY
-    );
+    nextParams.set("locality", DEFAULT_LOCALITY);
 
     setSearchParams(nextParams, {
       replace: true,
@@ -381,17 +333,12 @@ export default function Rentals() {
   function handlePageChange(nextPage) {
     const requestedPage = parsePage(nextPage);
 
-    const nextParams = new URLSearchParams(
-      searchParams
-    );
+    const nextParams = new URLSearchParams(searchParams);
 
     if (requestedPage <= 1) {
-      nextParams.delete('page');
+      nextParams.delete("page");
     } else {
-      nextParams.set(
-        'page',
-        String(requestedPage)
-      );
+      nextParams.set("page", String(requestedPage));
     }
 
     setSearchParams(nextParams, {
@@ -400,39 +347,25 @@ export default function Rentals() {
 
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   }
 
   useEffect(() => {
-    if (
-      !loading &&
-      page !== safePage
-    ) {
-      const nextParams = new URLSearchParams(
-        searchParams
-      );
+    if (!loading && page !== safePage) {
+      const nextParams = new URLSearchParams(searchParams);
 
       if (safePage <= 1) {
-        nextParams.delete('page');
+        nextParams.delete("page");
       } else {
-        nextParams.set(
-          'page',
-          String(safePage)
-        );
+        nextParams.set("page", String(safePage));
       }
 
       setSearchParams(nextParams, {
         replace: true,
       });
     }
-  }, [
-    loading,
-    page,
-    safePage,
-    searchParams,
-    setSearchParams,
-  ]);
+  }, [loading, page, safePage, searchParams, setSearchParams]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -464,9 +397,7 @@ export default function Rentals() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-gray-500" />
-            <h2 className="text-sm font-semibold text-gray-800">
-              Filters
-            </h2>
+            <h2 className="text-sm font-semibold text-gray-800">Filters</h2>
           </div>
 
           {hasOptionalFilters && (
@@ -511,10 +442,7 @@ export default function Rentals() {
                 className="w-full appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2.5 pr-9 text-sm text-gray-800 outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
               >
                 {BHK_OPTIONS.map((option) => (
-                  <option
-                    key={option.value || 'all'}
-                    value={option.value}
-                  >
+                  <option key={option.value || "all"} value={option.value}>
                     {option.label}
                   </option>
                 ))}
@@ -535,16 +463,11 @@ export default function Rentals() {
                 onChange={handleFurnishingChange}
                 className="w-full appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2.5 pr-9 text-sm text-gray-800 outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
               >
-                {FURNISHING_OPTIONS.map(
-                  (option) => (
-                    <option
-                      key={option.value || 'all'}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  )
-                )}
+                {FURNISHING_OPTIONS.map((option) => (
+                  <option key={option.value || "all"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
 
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -558,20 +481,16 @@ export default function Rentals() {
       ) : error ? (
         <ErrorState
           message={error}
-          onRetry={() =>
-            setRetryKey(
-              (value) => value + 1
-            )
-          }
+          onRetry={() => setRetryKey((value) => value + 1)}
         />
       ) : (
         <>
           <div className="mb-4 flex items-center justify-between gap-4">
             <p className="text-sm text-gray-500">
-              Showing{' '}
+              Showing{" "}
               <span className="font-medium text-gray-800">
                 {filteredRentals.length}
-              </span>{' '}
+              </span>{" "}
               matching rentals
             </p>
 
@@ -590,25 +509,14 @@ export default function Rentals() {
           ) : (
             <>
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {paginatedRentals.map(
-                  (rental) => {
-                    const id =
-                      rental.listing_id ??
-                      rental.rental_id ??
-                      rental.id;
+                {paginatedRentals.map((rental) => {
+                  const id = rental.listing_id ?? rental.rental_id ?? rental.id;
 
-                    return (
-                      <RentalCard
-                        key={String(id)}
-                        rental={rental}
-                      />
-                    );
-                  }
-                )}
+                  return <RentalCard key={String(id)} rental={rental} />;
+                })}
               </div>
 
-              {filteredRentals.length >
-                PAGE_SIZE && (
+              {filteredRentals.length > PAGE_SIZE && (
                 <div className="mt-8 flex justify-center">
                   <Pagination
                     page={safePage}

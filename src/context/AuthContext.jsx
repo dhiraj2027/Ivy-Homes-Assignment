@@ -4,7 +4,7 @@ import {
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from "react";
 
 import {
   login as apiLogin,
@@ -15,7 +15,7 @@ import {
   getRefreshToken,
   getStoredUser,
   clearToken,
-} from '../api/client.js';
+} from "../api/client.js";
 
 const AuthContext = createContext(null);
 
@@ -36,11 +36,7 @@ export function AuthProvider({ children }) {
       if (refreshToken) {
         const data = await refreshAccessToken();
 
-        setUser(
-          data?.user ||
-          getStoredUser() ||
-          null
-        );
+        setUser(data?.user || getStoredUser() || null);
 
         return;
       }
@@ -99,11 +95,7 @@ export function AuthProvider({ children }) {
         const data = await refreshAccessToken();
 
         if (mounted) {
-          setUser(
-            data?.user ||
-            getStoredUser() ||
-            null
-          );
+          setUser(data?.user || getStoredUser() || null);
         }
       } catch {
         clearToken();
@@ -114,10 +106,7 @@ export function AuthProvider({ children }) {
       }
     };
 
-    const intervalId = window.setInterval(
-      checkSession,
-      60_000
-    );
+    const intervalId = window.setInterval(checkSession, 60_000);
 
     return () => {
       mounted = false;
@@ -131,27 +120,17 @@ export function AuthProvider({ children }) {
       setUser(null);
     };
 
-    window.addEventListener(
-      'auth:unauthorized',
-      handleUnauthorized
-    );
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
 
     return () => {
-      window.removeEventListener(
-        'auth:unauthorized',
-        handleUnauthorized
-      );
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
     };
   }, []);
 
   const login = useCallback(async (email, password) => {
     const data = await apiLogin(email, password);
 
-    setUser(
-      data?.user ||
-      getStoredUser() ||
-      null
-    );
+    setUser(data?.user || getStoredUser() || null);
 
     return data;
   }, []);
@@ -172,20 +151,14 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(user),
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      'useAuth must be used within AuthProvider.'
-    );
+    throw new Error("useAuth must be used within AuthProvider.");
   }
 
   return context;
