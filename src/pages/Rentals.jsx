@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 
-import { fetchAll, getRentals } from "../api/client.js";
+import { getCachedRentals } from "../api/dataCache.js";
 import RentalCard from "../components/RentalCard.jsx";
 import Pagination from "../components/Pagination.jsx";
 
@@ -205,21 +205,10 @@ export default function Rentals() {
       setError("");
 
       try {
-        const response = await fetchAll(
-          ({ offset, limit, signal }) =>
-            getRentals(
-              {
-                offset,
-                limit,
-              },
-              { signal }
-            ),
-          {
-            pageSize: 50,
-            signal: controller.signal,
-            label: "rentals",
-          }
-        );
+        const response = await getCachedRentals({
+          signal: controller.signal,
+          force: retryKey > 0,
+        });
 
         setRentals(Array.isArray(response?.results) ? response.results : []);
       } catch (err) {

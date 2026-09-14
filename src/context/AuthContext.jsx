@@ -17,6 +17,8 @@ import {
   clearToken,
 } from "../api/client.js";
 
+import { clearCollectionCache } from "../api/dataCache.js";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -99,6 +101,7 @@ export function AuthProvider({ children }) {
         }
       } catch {
         clearToken();
+        clearCollectionCache();
 
         if (mounted) {
           setUser(null);
@@ -117,6 +120,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const handleUnauthorized = () => {
       clearToken();
+      clearCollectionCache();
       setUser(null);
     };
 
@@ -130,6 +134,10 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const data = await apiLogin(email, password);
 
+    // Collection data is shared within a session, but clear any previous
+    // session cache when authentication changes.
+    clearCollectionCache();
+
     setUser(data?.user || getStoredUser() || null);
 
     return data;
@@ -139,6 +147,7 @@ export function AuthProvider({ children }) {
     try {
       await apiLogout();
     } finally {
+      clearCollectionCache();
       setUser(null);
     }
   }, []);

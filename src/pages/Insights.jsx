@@ -9,12 +9,11 @@ import {
 } from "lucide-react";
 
 import {
-  fetchAll,
-  getHealth,
-  getListings,
-  getProjects,
-  getRentals,
-} from "../api/client.js";
+  getCachedHealth,
+  getCachedListings,
+  getCachedProjects,
+  getCachedRentals,
+} from "../api/dataCache.js";
 
 import { formatPrice } from "../utils/formatters.js";
 
@@ -23,8 +22,6 @@ const ASSIGNED_LOCALITY = "Golf Course Road";
 const REFERENCE_TIMESTAMP = "2026-09-10T00:00:00+05:30";
 
 const WINDOW_START = "2026-09-03T00:00:00+05:30";
-
-const PAGE_SIZE = 50;
 
 function normalizeText(value) {
   return String(value ?? "").trim();
@@ -456,7 +453,7 @@ export default function Insights() {
     setProgress("Loading complete datasets…");
 
     try {
-      const healthPromise = getHealth({
+      const healthPromise = getCachedHealth({
         signal,
       }).catch((healthError) => {
         if (healthError?.name === "AbortError") {
@@ -466,59 +463,20 @@ export default function Insights() {
         return null;
       });
 
-      const listingsPromise = fetchAll(
-        ({ offset, limit, signal: loaderSignal }) =>
-          getListings(
-            {
-              offset,
-              limit,
-            },
-            {
-              signal: loaderSignal,
-            }
-          ),
-        {
-          pageSize: PAGE_SIZE,
-          signal,
-          label: "listings",
-        }
-      );
+      const listingsPromise = getCachedListings({
+        signal,
+        force: false,
+      });
 
-      const rentalsPromise = fetchAll(
-        ({ offset, limit, signal: loaderSignal }) =>
-          getRentals(
-            {
-              offset,
-              limit,
-            },
-            {
-              signal: loaderSignal,
-            }
-          ),
-        {
-          pageSize: PAGE_SIZE,
-          signal,
-          label: "rentals",
-        }
-      );
+      const rentalsPromise = getCachedRentals({
+        signal,
+        force: false,
+      });
 
-      const projectsPromise = fetchAll(
-        ({ offset, limit, signal: loaderSignal }) =>
-          getProjects(
-            {
-              offset,
-              limit,
-            },
-            {
-              signal: loaderSignal,
-            }
-          ),
-        {
-          pageSize: PAGE_SIZE,
-          signal,
-          label: "projects",
-        }
-      );
+      const projectsPromise = getCachedProjects({
+        signal,
+        force: false,
+      });
 
       const [healthResult, listingResult, rentalResult, projectResult] =
         await Promise.all([

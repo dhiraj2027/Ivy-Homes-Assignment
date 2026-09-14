@@ -48,7 +48,8 @@ The application uses the Ivy Homes API as its backend data source.
 │   │   └── AuthContext.jsx
 │   │
 │   ├── api/
-│   │   └── client.js
+│   │   ├── client.js
+|   |   └── dataCache.js
 │   │
 │   ├── config.js
 │   ├── App.jsx
@@ -392,7 +393,7 @@ The seven-day posting window is treated as the half-open interval:
 
 ```text
 [2026-09-03T00:00:00+05:30,
- 2026-09-10T00:00:00+05:30)
+ 2026-09-10T00:00:00+05:30]
 ```
 
 ---

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import { fetchAll, getProjects } from "../api/client.js";
+import { getCachedProjects } from "../api/dataCache.js";
 
 import ProjectCard from "../components/ProjectCard.jsx";
 import Pagination from "../components/Pagination.jsx";
@@ -167,6 +167,8 @@ export default function Projects() {
 
   const [error, setError] = useState("");
 
+  const [retryKey, setRetryKey] = useState(0);
+
   const filters = useMemo(() => {
     const requestedSortBy =
       normalizeText(searchParams.get("sort_by")) || DEFAULT_SORT_BY;
@@ -271,23 +273,10 @@ export default function Projects() {
       setError("");
 
       try {
-        const response = await fetchAll(
-          ({ offset, limit, signal }) =>
-            getProjects(
-              {
-                offset,
-                limit,
-              },
-              {
-                signal,
-              }
-            ),
-          {
-            pageSize: 50,
-            signal: controller.signal,
-            label: "projects",
-          }
-        );
+        const response = await getCachedProjects({
+          signal: controller.signal,
+          force: retryKey > 0,
+        });
 
         if (!response || !Array.isArray(response.results)) {
           throw new Error("Invalid projects response from the API.");
@@ -314,7 +303,7 @@ export default function Projects() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [retryKey]);
 
   const filteredProjects = useMemo(() => {
     const locality = normalizeComparableText(filters.locality);
@@ -489,7 +478,7 @@ export default function Projects() {
 
           <button
             type="button"
-            onClick={() => window.location.reload()}
+            onClick={() => setRetryKey((value) => value + 1)}
             className="shrink-0 font-medium underline focus:outline-none focus:ring-2 focus:ring-red-400"
           >
             Retry

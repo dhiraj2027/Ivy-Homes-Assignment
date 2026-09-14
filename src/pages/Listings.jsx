@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { Grid2X2, List, SlidersHorizontal } from "lucide-react";
 
-import { fetchAll, getListings } from "../api/client.js";
+import { getCachedListings } from "../api/dataCache.js";
 
 import ListingCard from "../components/ListingCard.jsx";
 import FilterPanel from "../components/FilterPanel.jsx";
@@ -367,23 +367,10 @@ export default function Listings() {
       setError("");
 
       try {
-        const response = await fetchAll(
-          ({ offset, limit, signal }) =>
-            getListings(
-              {
-                offset,
-                limit,
-              },
-              {
-                signal,
-              }
-            ),
-          {
-            pageSize: 50,
-            signal: controller.signal,
-            label: "listings",
-          }
-        );
+        const response = await getCachedListings({
+          signal: controller.signal,
+          force: retryKey > 0,
+        });
 
         if (!response || !Array.isArray(response.results)) {
           throw new Error("Invalid listings response from the API.");
